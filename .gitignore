@@ -1,0 +1,8 @@
+# Editor / OS
+.DS_Store
+*.log
+
+# Local tooling
+.claude/
+.vercel/
+node_modules/

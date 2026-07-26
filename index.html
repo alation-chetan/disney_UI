@@ -1,0 +1,1573 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Enterprise Data Marketplace — UI Prototype</title>
+<style>
+:root{
+  /* deep, restrained navy chrome */
+  --navy:#0E1F33;
+  --navy-dark:#0A1728;
+  --navy-darker:#08121F;
+  /* signature warm accent — used sparingly for the "push up" action */
+  --orange:#DE8138;
+  /* confident primary accent */
+  --blue:#2563EB;
+  --blue-dark:#1E40AF;
+  --pill-bg:#EEF3FE;
+  --ink:#0B1524;
+  --ink-2:#3B4859;
+  --muted:#6A7787;
+  --line:#E7EBF1;
+  --line-soft:#F1F4F9;
+  --card:#ffffff;
+  --canvas:#F5F7FA;      /* light content canvas so white cards float */
+  --bg:#0B1728;
+  --green-bg:#E6F5EC;--green:#1E8E5A;
+  --segA:#6D5AE6;--segA-bg:#EEEBFC;
+  --segB:#0E9488;--segB-bg:#DCF2EF;
+  --edm:#2563EB;--edm-bg:#EAF1FE;
+  --radius:14px;
+  --shadow:0 1px 2px rgba(11,21,36,.05),0 4px 14px rgba(11,21,36,.05);
+  --shadow-hover:0 12px 34px rgba(11,21,36,.13);
+  --font:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+  --serif:"Georgia","Times New Roman",Cambria,serif;   /* editorial display face */
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow:hidden;letter-spacing:-0.006em}
+button{font-family:inherit;cursor:pointer}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:rgba(11,21,36,.16);border-radius:8px}
+::-webkit-scrollbar-thumb:hover{background:rgba(11,21,36,.28)}
+::-webkit-scrollbar-track{background:transparent}
+.ico{display:inline-block;vertical-align:-.16em;flex:0 0 auto}
+
+/* ---------- App shell ---------- */
+.app{display:grid;grid-template-columns:92px 1fr;grid-template-rows:58px 1fr;height:100vh}
+.app.nav-open{grid-template-columns:92px 240px 1fr}
+.topbar{grid-column:1 / -1;background:var(--navy);display:flex;align-items:center;justify-content:space-between;padding:0 22px 0 22px;color:#fff;position:relative;z-index:5;border-bottom:1px solid rgba(255,255,255,.06)}
+.brand{display:flex;align-items:center;gap:11px;min-width:0}
+.brand .glyph{width:28px;height:28px;border-radius:8px;background:linear-gradient(140deg,#2f6bf0,#1b45b8);display:grid;place-items:center;color:#fff;font-size:15px;flex:0 0 auto;box-shadow:0 2px 6px rgba(37,99,235,.4)}
+.brand .crumb{display:flex;align-items:center;gap:9px;font-size:13.5px;color:#cdd8e6;font-weight:500;min-width:0}
+.brand .crumb b{color:#fff;font-weight:650}
+.brand .crumb .sep{color:rgba(255,255,255,.32)}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.icon-btn{width:32px;height:32px;border-radius:9px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.04);color:#dbe6f2;display:grid;place-items:center;font-size:14px;transition:.15s}
+.icon-btn:hover{background:rgba(255,255,255,.12);color:#fff}
+.avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(140deg,#3b82f6,#1d4ed8);color:#fff;display:grid;place-items:center;font-weight:600;font-size:12.5px;box-shadow:0 2px 6px rgba(29,78,216,.4)}
+
+/* ---------- Icon rail (marketplace switcher) ---------- */
+.rail{background:var(--navy-darker);display:flex;flex-direction:column;align-items:stretch;gap:4px;padding:16px 8px}
+.rail-store{width:38px;height:38px;border:0;border-radius:10px;background:linear-gradient(140deg,#2f6bf0,#1b45b8);display:grid;place-items:center;color:#fff;margin:0 auto 6px;box-shadow:0 3px 10px rgba(37,99,235,.4);cursor:pointer;transition:.15s}
+.rail-store:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(37,99,235,.5)}
+.rail-div{width:32px;height:1px;background:rgba(255,255,255,.12);margin:0 auto 8px}
+.rail-item{width:100%;display:flex;flex-direction:column;align-items:center;gap:6px;padding:9px 3px;border-radius:12px;background:transparent;border:0;position:relative;cursor:pointer;transition:.16s}
+.rail-item .rtile{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;font-size:14px;font-weight:700;color:#fff;background:rgba(255,255,255,.09);letter-spacing:.01em;transition:.16s}
+.rail-item .rlabel{font-size:9.5px;font-weight:600;color:#8598ae;text-align:center;line-height:1.15;letter-spacing:.01em}
+.rail-item:hover{background:rgba(255,255,255,.05)}
+.rail-item:hover .rtile{background:rgba(255,255,255,.16)}
+.rail-item:hover .rlabel{color:#cfdae7}
+.rail-item.active{background:rgba(255,255,255,.06)}
+.rail-item.active .rtile{box-shadow:0 5px 16px rgba(0,0,0,.32)}
+.rail-item.active .rlabel{color:#fff}
+.rail-item.active::before{content:"";position:absolute;left:-8px;top:14px;bottom:14px;width:3px;border-radius:0 3px 3px 0;background:#fff}
+
+/* ---------- Nav panel (per-section menu) ---------- */
+.navpanel{background:var(--navy);color:#c3d0e0;padding:20px 16px 18px;overflow-y:auto;display:none;flex-direction:column}
+.app.nav-open .navpanel{display:flex}
+.np-head{padding:2px 8px 16px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:14px}
+.np-name{font-size:15px;font-weight:650;color:#fff;line-height:1.3;letter-spacing:-.01em}
+.np-scope{display:inline-block;margin-top:8px;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.04em;text-transform:uppercase}
+.np-label{font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:#6a819b;margin:2px 8px 10px;font-weight:600}
+.np-item{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:transparent;border:0;color:#c3d0e0;padding:11px 12px;border-radius:10px;font-size:13.5px;font-weight:550;position:relative;margin-bottom:3px;transition:.14s}
+.np-item .ic{font-size:15px;width:20px;text-align:center;flex:0 0 auto;opacity:.9}
+.np-item .cnt{margin-left:auto;font-size:11px;font-weight:600;color:#c3d0e0;background:rgba(255,255,255,.12);padding:1px 8px;border-radius:20px}
+.np-item:hover{background:rgba(255,255,255,.06);color:#fff}
+.np-item.active{background:rgba(255,255,255,.11);color:#fff}
+.np-item.active .ic{opacity:1}
+.np-item.active::before{content:"";position:absolute;left:-16px;top:9px;bottom:9px;width:3px;background:var(--blue);border-radius:0 3px 3px 0}
+.rollup-note{font-size:11.5px;color:#6a819b;padding:16px 10px 0;line-height:1.55;margin-top:auto;border-top:1px solid rgba(255,255,255,.06)}
+
+/* ---------- Main / content card ---------- */
+.main{padding:0;overflow:hidden;display:flex}
+.card-surface{background:var(--canvas);margin:0;flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.content{flex:1;overflow-y:auto;padding:0 40px 72px}
+.content>*{max-width:1180px;margin-left:auto;margin-right:auto}
+.page-title{font-family:var(--serif);font-size:28px;font-weight:700;margin:0;color:var(--ink);letter-spacing:-.01em}
+.page-sub{color:var(--muted);font-size:14px;margin:6px 0 0}
+.page-head{padding:30px 0 8px}
+/* content-level tabs (Home / Browse / Bookmarks) on The Marketplace page */
+.mkt-tabs{display:flex;gap:30px;border-bottom:1px solid var(--line);margin:26px 0 4px;padding:0}
+.mkt-tab{background:none;border:0;padding:4px 2px 14px;font-size:15px;font-weight:600;color:var(--muted);position:relative;top:1px}
+.mkt-tab.active{color:var(--ink)}
+.mkt-tab.active::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2.5px;background:var(--blue);border-radius:3px}
+.mkt-tab:hover{color:var(--ink)}
+
+/* ---------- Manage page ---------- */
+.mgr-head{padding:24px 0 0}
+.mgr-tabs{display:flex;gap:8px;margin-top:16px;border-bottom:1px solid var(--line);padding-bottom:0}
+.mgr-tab{background:transparent;border:0;border-bottom:2.5px solid transparent;padding:8px 4px 12px;margin-right:18px;font-size:14px;font-weight:600;color:var(--muted)}
+.mgr-tab.active{color:var(--ink);border-bottom-color:var(--blue)}
+.mgr-tab:hover{color:var(--ink)}
+.mgr-split{display:grid;grid-template-columns:minmax(340px,400px) 1fr;gap:26px;margin-top:24px;align-items:start}
+.mgr-controls{max-height:calc(100vh - 220px);overflow-y:auto;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:20px 20px 0}
+.mgr-preview{position:sticky;top:12px}
+.mgr-pv-label{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:9px}
+.mgr-pv-frame{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff;box-shadow:var(--shadow-hover);max-height:calc(100vh - 240px);overflow-y:auto}
+.mgr-pv-inner{zoom:.58;pointer-events:none;padding:0 20px 24px;background:var(--canvas)}
+.mgr-controls .cz-foot{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--line);margin:8px -20px 0;padding:14px 20px}
+/* curation list */
+.cur-note{background:#FFF7F0;border:1px solid #F7D9C2;color:#8a4b1f;border-radius:10px;padding:12px 16px;font-size:12.5px;margin:20px 0 6px;display:flex;gap:10px;line-height:1.5}
+.cur-list{display:flex;flex-direction:column;gap:12px;margin-top:16px}
+.cur-row{display:flex;align-items:center;gap:16px;border:1px solid var(--line);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow);flex-wrap:wrap}
+.cur-ic{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;font-size:19px;color:#fff;flex:0 0 auto}
+.cur-main{min-width:180px;flex:1}
+.cur-main h4{margin:0;font-size:14.5px;color:var(--ink)}
+.cur-main .cm{font-size:12px;color:var(--muted);margin-top:2px}
+.cur-doms{display:flex;flex-wrap:wrap;gap:6px;max-width:320px}
+.cur-status{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:5px 11px;border-radius:20px}
+.cur-status.in{color:var(--green);background:var(--green-bg)}
+.cur-status.out{color:var(--muted);background:#eef1f5}
+.cur-acts{display:flex;gap:10px;margin-left:auto}
+
+/* ---------- Browse — AI insights hero (matches the Alation reference) ---------- */
+.ai-hero{margin:34px 0 6px}
+.ai-eyebrow{color:var(--muted);font-size:14.5px}
+.ai-eyebrow a{color:var(--blue);text-decoration:none;font-weight:600}
+.ai-eyebrow a:hover{text-decoration:underline}
+.ai-h{font-family:var(--serif);font-size:30px;font-weight:700;margin:8px 0 22px;color:var(--ink);letter-spacing:-.012em}
+.ai-box{display:flex;align-items:center;gap:12px;border:1.6px solid var(--blue);border-radius:14px;padding:16px 18px;background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.10)}
+.ai-box input{flex:1;border:0;outline:0;font-size:15.5px;color:var(--ink);background:transparent}
+.ai-box .send{width:34px;height:34px;border-radius:9px;border:0;background:var(--pill-bg);color:var(--blue);display:grid;place-items:center;flex:0 0 auto;transition:.15s}
+.ai-box .send:hover{background:var(--blue);color:#fff}
+.ai-disc{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:12.5px;margin:12px 2px 0}
+.ai-disc .ico{color:var(--orange)}
+.browse-count{margin-left:auto;font-size:13px;color:var(--muted);font-weight:500}
+.browse-tools{display:flex;align-items:center;gap:10px;margin:16px 0 4px}
+.section-head{margin:34px 0 2px}
+.section-head h3{font-size:20px;font-weight:700;margin:0;color:var(--ink)}
+.section-head p{color:var(--muted);font-size:13.5px;margin:4px 0 0}
+.control{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 13px;font-size:13px;color:var(--ink-2);font-weight:550;box-shadow:var(--shadow)}
+.control select{border:0;background:transparent;font:inherit;color:inherit;outline:0;cursor:pointer}
+.search-inline{margin-left:auto;position:relative}
+.search-inline input{border:1px solid var(--line);border-radius:10px;padding:10px 12px 10px 36px;font-size:13px;width:250px;outline:0;background:#fff;box-shadow:var(--shadow);transition:.15s}
+.search-inline input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.search-inline .mag{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9aa8b6;font-size:13px}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;margin-top:20px}
+
+/* ---------- Card ---------- */
+.pcard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;display:flex;flex-direction:column;box-shadow:var(--shadow);transition:box-shadow .18s,transform .18s,border-color .18s;position:relative}
+.pcard:hover{box-shadow:var(--shadow-hover);transform:translateY(-3px);border-color:#d7deea}
+.pcard .bm{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:8px;border:1px solid transparent;background:transparent;color:#b6c1cd;font-size:16px;display:grid;place-items:center;line-height:1}
+.pcard .bm:hover{background:#f2f5f8;color:var(--ink)}
+.pcard .bm.on{color:var(--blue)}
+.pcard .bm.on svg{fill:currentColor}
+.pcard .p-icon{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;color:#fff;margin-bottom:14px}
+.p-source .p-src{display:inline-flex}
+.pill.edm-pill .ico,.origin .ico,.pushed-tag .ico,.push-btn .ico{margin-right:1px}
+.pcard h4{font-size:16px;font-weight:700;margin:0 40px 8px 0;color:var(--ink);line-height:1.25}
+.p-owner{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:13px;margin-bottom:10px}
+.p-owner .oav{width:20px;height:20px;border-radius:50%;background:#5a6b7b;color:#fff;font-size:9px;font-weight:600;display:grid;place-items:center}
+.p-source{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--ink-2);font-weight:500;padding-bottom:10px;border-bottom:1px solid var(--line-soft);margin-bottom:10px}
+.p-desc{color:var(--muted);font-size:13.5px;line-height:1.5;margin:0 0 14px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.p-stats{display:flex;gap:16px;color:var(--muted);font-size:12.5px;margin-bottom:12px}
+.p-stats span{display:inline-flex;align-items:center;gap:5px}
+.p-pills{display:flex;flex-wrap:wrap;gap:7px;margin-top:auto}
+.pill{background:var(--pill-bg);color:var(--blue-dark);font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px;white-space:nowrap}
+.pill.edm-pill{background:var(--edm-bg);color:#b0491a}
+.origin{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:20px;margin-bottom:12px}
+.p-footer{margin-top:14px;padding-top:12px;border-top:1px solid var(--line-soft);display:flex;flex-direction:column;align-items:stretch;gap:9px}
+.pushed-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.push-acts{display:flex;gap:16px;justify-content:flex-end}
+.push-btn{border:1px solid var(--orange);color:var(--orange);background:#fff;font-weight:600;font-size:12.5px;padding:8px 12px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.push-btn:hover{background:var(--edm-bg)}
+.pushed-tag{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--green);background:var(--green-bg);padding:5px 11px;border-radius:8px}
+.link-btn{color:var(--blue);font-weight:600;font-size:12.5px;background:none;border:0;padding:2px 0}
+.link-btn:hover{text-decoration:underline}
+/* Push-to-EDM modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(13,19,34,.45);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;transition:.18s;z-index:70}
+.modal-overlay.open{opacity:1}
+.modal{background:#fff;width:480px;max-width:100%;max-height:90vh;border-radius:16px;box-shadow:0 24px 70px rgba(13,19,34,.35);display:flex;flex-direction:column;transform:translateY(8px);transition:.18s}
+.modal-overlay.open .modal{transform:none}
+.modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:20px 22px 14px}
+.modal-kicker{font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--orange)}
+.modal-head h3{margin:4px 0 0;font-size:19px;color:var(--ink)}
+.modal-body{padding:0 22px 4px;overflow-y:auto}
+.mnote{background:var(--edm-bg);border:1px solid #CFE0FB;color:#1E40AF;border-radius:10px;padding:11px 14px;font-size:12.5px;line-height:1.5;margin-bottom:16px}
+.mfield{margin-bottom:16px}
+.mlbl{display:block;font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:9px}
+.mchips{display:flex;flex-wrap:wrap;gap:7px}
+.dpick{display:flex;flex-direction:column;gap:8px}
+.dpick-item{display:flex;align-items:center;gap:11px;border:1.5px solid var(--line);background:#fff;border-radius:11px;padding:11px 13px;text-align:left;font:inherit}
+.dpick-item:hover{border-color:var(--blue)}
+.dpick-item.on{border-color:var(--blue);background:var(--edm-bg)}
+.dpick-item .di{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;font-size:16px;color:#fff;flex:0 0 auto}
+.dpick-item .dl{flex:1;font-size:14px;font-weight:600;color:var(--ink)}
+.dpick-item .dck{width:20px;text-align:center;color:var(--blue);font-weight:800}
+.modal-foot{display:flex;gap:10px;justify-content:flex-end;padding:16px 22px 20px}
+.modal-foot .mcancel{border:1px solid var(--line);background:#fff;color:var(--ink-2);font-weight:600;font-size:13.5px;padding:10px 18px;border-radius:9px}
+.modal-foot .mok{border:0;background:var(--orange);color:#fff;font-weight:600;font-size:13.5px;padding:10px 20px;border-radius:9px}
+.modal-foot .mok:disabled{opacity:.5;cursor:not-allowed}
+.cz-field select{width:100%;border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--ink);outline:0;background:#fff;font-family:inherit}
+.cz-field select:focus{border-color:var(--blue)}
+/* nav-row New button + primary button + My Data Products header */
+.np-new{margin-left:auto;display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.25);font-weight:600;font-size:11px;padding:3px 9px;border-radius:7px}
+.np-new:hover{background:var(--blue)}
+.btn-primary{display:inline-flex;align-items:center;gap:7px;border:0;background:var(--blue);color:#fff;font-weight:600;font-size:13.5px;padding:11px 18px;border-radius:10px;box-shadow:0 4px 12px rgba(37,99,235,.28);transition:.15s}
+.btn-primary:hover{background:var(--blue-dark)}
+.mine-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+
+/* ---------- Empty state ---------- */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:90px 20px}
+.empty .eicon{font-size:34px;color:#b6c1cd;margin-bottom:14px}
+.empty h4{margin:0 0 6px;font-size:16px;color:var(--ink)}
+.empty p{margin:0 0 22px;color:var(--muted);font-size:14px}
+.btn-outline{border:1px solid var(--blue);color:var(--blue);background:#fff;font-weight:600;font-size:13.5px;padding:9px 18px;border-radius:9px}
+.btn-outline:hover{background:#f0f7ff}
+
+/* ---------- Home tab (wireframe-based) ---------- */
+.home{margin-top:22px}
+/* Hero band: logo + title over background image */
+.hp-hero{position:relative;border-radius:18px;overflow:hidden;min-height:308px;display:flex;flex-direction:column;justify-content:flex-end;padding:26px 34px 34px;color:#fff;
+  background:linear-gradient(135deg,#0c1f38 0%,#123a63 55%,#155a86 100%)}
+.hp-hero::after{content:"";position:absolute;inset:0;pointer-events:none;background:
+  radial-gradient(90% 120% at 88% 8%,rgba(80,150,230,.34),transparent 60%),
+  radial-gradient(70% 90% at 6% 96%,rgba(37,99,235,.24),transparent 62%)}
+/* larger dedicated logo area (top-left) */
+.hp-logo{position:absolute;top:24px;left:30px;display:flex;align-items:center;gap:14px;z-index:2;max-width:60%}
+.hp-logo .lmark{width:58px;height:58px;border-radius:14px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);display:grid;place-items:center;font-size:30px;backdrop-filter:blur(2px);flex:0 0 auto}
+.hp-logo .lt{font-size:19px;line-height:1.15;font-weight:800;letter-spacing:.01em}
+.hp-logo .lt small{display:block;font-weight:500;font-size:13px;opacity:.82;letter-spacing:.02em}
+/* frosted plate so an uploaded company logo (any color) stays legible & feels roomy */
+.logo-plate{display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,.95);border-radius:14px;padding:16px 22px;box-shadow:0 6px 20px rgba(0,0,0,.22);min-height:64px;min-width:140px}
+.logo-plate img{display:block}
+.hp-bgtag{position:absolute;top:22px;right:22px;z-index:2;font-size:10.5px;font-weight:600;letter-spacing:.03em;color:#fff;background:rgba(255,255,255,.14);border:1px dashed rgba(255,255,255,.4);padding:4px 10px;border-radius:20px}
+.hp-hero-inner{position:relative;z-index:2;max-width:720px}
+/* centered hero variant — logo stays at top-left, text block centers */
+.hp-hero.center{padding-top:82px}
+.hp-hero.center .hp-hero-inner{max-width:760px;margin-left:auto;margin-right:auto;text-align:center}
+.hp-hero.center .hp-tagline{margin-left:auto;margin-right:auto}
+.hp-eyebrow{font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#9cc4ec;margin-bottom:9px}
+.hp-title{font-family:var(--serif);font-size:40px;font-weight:700;margin:0 0 12px;line-height:1.08;letter-spacing:-.015em}
+.hp-tagline{font-size:15.5px;line-height:1.55;color:#cfe0f2;margin:0;max-width:580px}
+/* Search bar (its own prominent row, overlapping hero bottom) */
+.hp-search-wrap{margin:-28px 34px 0;position:relative;z-index:3}
+.hp-search{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid rgba(255,255,255,.7);border-radius:14px;box-shadow:0 16px 40px rgba(11,21,36,.18);padding:15px 16px 15px 20px}
+.hp-search .mg{font-size:17px;color:#8a99ab}
+.hp-search input{flex:1;border:0;outline:0;font-size:15.5px;color:var(--ink);background:transparent}
+.hp-search .go{border:0;background:var(--blue);color:#fff;font-weight:600;font-size:14px;padding:11px 22px;border-radius:10px;transition:.15s;box-shadow:0 4px 12px rgba(37,99,235,.28)}
+.hp-search .go:hover{background:var(--blue-dark)}
+/* Generic home section header w/ customization affordances */
+.hp-sec{margin-top:42px}
+/* distinct section panel (Domains / Most Popular / Recently Used) */
+.hp-sec.panel{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px 24px 26px;box-shadow:var(--shadow);margin-top:24px}
+.hp-sec.panel .domain-grid,.hp-sec.panel .grid,.hp-sec.panel .recent-row{margin-top:16px}
+/* inside a panel, cards use the canvas tint so they read against the white panel */
+.hp-sec.panel .pcard,.hp-sec.panel .domain-tile,.hp-sec.panel .recent-card{background:var(--canvas);box-shadow:none;border-color:#E2E8F1}
+.hp-sec.panel .pcard:hover,.hp-sec.panel .domain-tile:hover,.hp-sec.panel .recent-card:hover{background:#fff;box-shadow:var(--shadow-hover);border-color:#d7deea}
+.dom-toggle-wrap{display:flex;justify-content:center;margin-top:16px}
+.dom-toggle{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#fff;color:var(--blue);font-weight:600;font-size:13px;padding:9px 18px;border-radius:9px;box-shadow:var(--shadow);transition:.15s}
+.dom-toggle:hover{border-color:var(--blue);background:#f4f8ff}
+.hp-sec-head{display:flex;align-items:flex-end;gap:12px}
+.hp-sec-head h3{font-family:var(--serif);font-size:21px;font-weight:700;margin:0;color:var(--ink);letter-spacing:-.01em}
+.hp-sec-head p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.hp-sec-tools{margin-left:auto;display:flex;align-items:center;gap:8px}
+.hp-icon-btn{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:#fff;color:#7089a0;font-size:14px;display:grid;place-items:center}
+.hp-icon-btn:hover{border-color:var(--blue);color:var(--blue)}
+.hp-seeall{color:var(--blue);font-weight:600;font-size:13px;background:none;border:0}
+/* Welcome message card (hide + customize) */
+.welcome{display:flex;gap:15px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-top:22px;box-shadow:var(--shadow)}
+.welcome .wemoji{color:var(--blue);display:inline-flex;line-height:1.2;margin-top:1px}
+.welcome h4{margin:0 0 3px;font-size:15px;font-weight:650;color:var(--ink)}
+.welcome p{margin:0;color:var(--ink-2);font-size:13.5px;line-height:1.55}
+.welcome .wtools{margin-left:auto;display:flex;gap:6px;flex:0 0 auto}
+/* Domains grid */
+.domain-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:12px;margin-top:16px}
+.domain-tile{display:flex;align-items:center;gap:11px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;text-align:left;box-shadow:var(--shadow);transition:.15s}
+.domain-tile:hover{border-color:var(--blue);transform:translateY(-2px);box-shadow:var(--shadow-hover)}
+.domain-tile .dic{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-size:17px;color:#fff;flex:0 0 auto}
+.domain-tile>span:last-child{display:flex;flex-direction:column;min-width:0}
+.domain-tile .dn{display:block;font-size:13.5px;font-weight:700;color:var(--ink);line-height:1.15}
+.domain-tile .dc{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
+/* Recently used row (horizontal) */
+.recent-row{display:flex;gap:14px;overflow-x:auto;padding:16px 2px 6px;scroll-snap-type:x mandatory}
+.recent-card{scroll-snap-align:start;flex:0 0 260px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;box-shadow:var(--shadow);transition:.15s}
+.recent-card:hover{box-shadow:var(--shadow-hover);transform:translateY(-2px)}
+.recent-card .rtop{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.recent-card .ric{width:36px;height:36px;border-radius:9px;display:grid;place-items:center;font-size:18px;color:#fff;flex:0 0 auto}
+.recent-card h5{margin:0;font-size:14px;font-weight:700;color:var(--ink);line-height:1.2}
+.recent-card .rmeta{font-size:11.5px;color:var(--muted);margin-top:1px}
+.recent-card .rwhen{font-size:11.5px;color:var(--muted);display:flex;align-items:center;gap:6px}
+/* Sensitivity chip (from wireframe: DP Sensitivity) */
+.sens{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px}
+.sens.public{color:#1E7E34;background:#E4F6E9}
+.sens.internal{color:#8a5a00;background:#FCEFD6}
+.sens.restricted{color:#B4232B;background:#FBE3E3}
+/* Other customizable sections placeholder */
+.custom-block{margin-top:18px;border:1.5px dashed #CBD5E2;border-radius:14px;background:#fff;padding:30px;text-align:center;color:var(--muted)}
+.custom-block .cbig{font-size:26px;margin-bottom:6px}
+.custom-block h4{margin:0 0 4px;color:var(--ink-2);font-size:15px}
+.custom-block p{margin:0;font-size:13px}
+.custom-block .addbtn{margin-top:14px;border:1px solid var(--blue);color:var(--blue);background:#fff;font-weight:600;font-size:13px;padding:8px 16px;border-radius:9px}
+/* Access Manager footer link */
+.access-bar{margin-top:34px;display:flex;align-items:center;gap:15px;background:linear-gradient(120deg,#0E1F33,#14314f);border-radius:16px;padding:20px 24px;color:#fff;box-shadow:var(--shadow)}
+.access-bar .aic{width:40px;height:40px;border-radius:11px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.14);display:grid;place-items:center;font-size:19px}
+.access-bar .atxt b{display:block;font-size:14.5px;font-weight:650}
+.access-bar .atxt span{font-size:12.5px;color:#b7c6d8}
+.access-bar .abtn{margin-left:auto;background:#fff;color:var(--ink);border:0;font-weight:650;font-size:13px;padding:10px 18px;border-radius:10px;display:inline-flex;align-items:center;gap:8px;transition:.15s}
+.access-bar .abtn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.wf-note{background:#FFF7F0;border:1px solid #F7D9C2;color:#8a4b1f;border-radius:10px;padding:12px 16px;font-size:12.5px;margin-top:22px;display:flex;gap:10px;line-height:1.5}
+
+/* Customize button on hero */
+.cz-btn{position:absolute;top:20px;right:22px;z-index:3;display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:#fff;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.4);padding:7px 14px;border-radius:20px;backdrop-filter:blur(2px)}
+.cz-btn:hover{background:rgba(255,255,255,.28)}
+/* Search bar size variants */
+.hp-search-wrap.sz-sm{max-width:640px;margin:-24px auto 0}
+.hp-search.sz-sm{padding:10px 14px;border-radius:12px}
+.hp-search.sz-sm input{font-size:14px}
+.hp-search.sz-sm .mg{font-size:15px}
+.hp-search.sz-sm .go{padding:8px 16px;font-size:13px}
+.hp-search.sz-lg{padding:20px 22px}
+.hp-search.sz-lg input{font-size:17.5px}
+.hp-search.sz-lg .mg{font-size:20px}
+.hp-search.sz-lg .go{padding:14px 26px;font-size:15px}
+/* Customize drawer */
+.cz-overlay{position:fixed;inset:0;background:rgba(13,19,34,.4);opacity:0;pointer-events:none;transition:.2s;z-index:60}
+.cz-overlay.open{opacity:1;pointer-events:auto}
+.cz-drawer{position:fixed;top:0;right:0;height:100vh;width:384px;max-width:92vw;background:#fff;box-shadow:-10px 0 44px rgba(13,19,34,.22);transform:translateX(100%);transition:transform .24s cubic-bezier(.4,0,.2,1);z-index:61;display:flex;flex-direction:column}
+.cz-drawer.open{transform:none}
+.cz-head{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+.cz-head h3{margin:0;font-size:16px;color:var(--ink)}
+.cz-body{padding:20px;overflow-y:auto;flex:1}
+.cz-intro{font-size:12.5px;color:var(--muted);margin:0 0 20px;line-height:1.5}
+.cz-group{margin-bottom:26px}
+.cz-lbl{display:block;font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:11px}
+.cz-row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.cz-logo-prev{min-height:96px;border-radius:10px;background:linear-gradient(120deg,#0a2a44,#0e5c8f);display:flex;align-items:center;padding:14px 18px;gap:12px;color:#fff}
+.cz-logo-prev .lmark{width:48px;height:48px;border-radius:12px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);display:grid;place-items:center;font-size:24px;flex:0 0 auto}
+.cz-logo-prev .lt{font-size:16px;line-height:1.15;font-weight:800}
+.cz-logo-prev .lt small{display:block;font-weight:500;font-size:12px;opacity:.85}
+.cz-logo-prev .logo-plate{padding:12px 16px;min-height:56px}
+.cz-logo-prev .logo-plate img{max-height:56px!important;max-width:200px!important}
+.cz-upload{border:1px solid var(--blue);color:var(--blue);background:#fff;font-weight:600;font-size:12.5px;padding:8px 14px;border-radius:9px}
+.cz-upload:hover{background:#f0f7ff}
+.cz-ghost{border:1px solid var(--line);color:var(--ink-2);background:#fff;font-weight:600;font-size:12.5px;padding:8px 14px;border-radius:9px}
+.cz-ghost:hover{border-color:var(--muted)}
+.cz-txt input{width:100%;border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-size:13.5px;outline:0}
+.cz-txt input:focus{border-color:var(--blue)}
+.swatches{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.swatch{height:48px;border-radius:10px;border:2px solid transparent;box-shadow:inset 0 0 0 1px rgba(13,19,34,.08);cursor:pointer;position:relative}
+.swatch.sel{border-color:var(--ink)}
+.swatch.sel::after{content:"✓";position:absolute;top:3px;right:6px;color:#fff;font-size:12px;font-weight:800;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+.swatch .sn{position:absolute;bottom:4px;left:7px;color:#fff;font-size:10px;font-weight:600;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+.size-seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.size-seg button{border:0;background:#fff;padding:9px 16px;font-size:13px;font-weight:600;color:var(--ink-2);border-right:1px solid var(--line)}
+.size-seg button:last-child{border-right:0}
+.size-seg button.sel{background:var(--navy);color:#fff}
+.cz-foot{padding:14px 20px;border-top:1px solid var(--line);display:flex;gap:10px}
+.cz-foot .reset{border:1px solid var(--line);background:#fff;color:var(--ink-2);font-weight:600;font-size:13px;padding:10px 16px;border-radius:9px}
+.cz-foot .done{margin-left:auto;border:0;background:var(--orange);color:#fff;font-weight:600;font-size:13px;padding:10px 24px;border-radius:9px}
+/* group header row (label + optional show/hide switch) */
+.cz-group{padding-bottom:20px;border-bottom:1px solid var(--line-soft)}
+.cz-group:last-child{border-bottom:0}
+.cz-sechead{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+/* editable fields */
+.cz-field{margin-bottom:11px}
+.cz-field label{display:block;font-size:11.5px;color:var(--muted);font-weight:600;margin-bottom:5px}
+.cz-field input,.cz-field textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:8px 11px;font-size:13px;color:var(--ink);outline:0;font-family:inherit;resize:vertical}
+.cz-field input:focus,.cz-field textarea:focus{border-color:var(--blue)}
+/* toggle switch */
+.sw{position:relative;display:inline-block;width:38px;height:22px;flex:0 0 auto;cursor:pointer}
+.sw input{opacity:0;width:0;height:0;position:absolute}
+.sw>span{position:absolute;inset:0;background:#c9d3dd;border-radius:20px;transition:.2s}
+.sw>span::before{content:"";position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.sw input:checked+span{background:var(--blue)}
+.sw input:checked+span::before{transform:translateX(16px)}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:12px 20px;border-radius:10px;font-size:13.5px;font-weight:500;opacity:0;transition:.28s;z-index:50;box-shadow:0 8px 30px rgba(0,0,0,.3);display:flex;align-items:center;gap:10px}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media (max-width:1200px){.mgr-split{grid-template-columns:1fr}.mgr-preview{display:none}.mgr-controls{max-height:none}}
+.app.nav-open .rail-store{box-shadow:0 0 0 2px rgba(255,255,255,.9),0 3px 10px rgba(37,99,235,.5)}
+@media (max-width:860px){.app.nav-open{grid-template-columns:92px 1fr}.content{padding:0 18px 60px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Top bar -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="glyph">◆</span>
+      <span class="crumb"><b>Data Products</b><span class="sep">/</span><span id="crumbName">Enterprise Data Marketplace</span></span>
+    </div>
+    <div class="topbar-right">
+      <button class="icon-btn" id="tbSearch" title="Search"></button>
+      <button class="icon-btn" id="tbHelp" title="Help"></button>
+      <div class="avatar">C</div>
+    </div>
+  </header>
+
+  <!-- Icon rail: marketplace switcher -->
+  <nav class="rail" id="rail" aria-label="Marketplaces"></nav>
+
+  <!-- Nav panel: per-section Data Products App menu -->
+  <aside class="navpanel">
+    <div class="np-head">
+      <div class="np-name" id="npName">Enterprise Data Marketplace</div>
+      <span class="np-scope" id="npScope"></span>
+    </div>
+    <div class="np-label">Data Products App</div>
+    <nav id="navMenu"></nav>
+    <div class="rollup-note">Data products published in a segment can be <b style="color:#cfe0ee">pushed up</b> to the Enterprise Data Marketplace for company-wide discovery.</div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <section class="card-surface">
+      <div class="content" id="content"></div>
+    </section>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+<input type="file" id="czLogoFile" accept="image/*" hidden/>
+<input type="file" id="czBgFile" accept="image/*" hidden/>
+
+<script>
+/* ============================================================
+   Enterprise Data Marketplace — UI Prototype (static, no build)
+   ============================================================ */
+
+/* ---- Sections ---- */
+const SECTIONS = {
+  edm:{id:'edm',    name:'Enterprise Data Marketplace', short:'EDM', color:'var(--edm)', bg:'var(--edm-bg)',
+       sub:'Company-wide discovery. Data products rolled up from every segment marketplace.'},
+  A:  {id:'A',      name:'Segment Marketplace A', short:'Segment A', color:'var(--segA)', bg:'var(--segA-bg)',
+       sub:'Scoped marketplace for Segment A. Publish here, then push products up to the EDM.'},
+  B:  {id:'B',      name:'Segment Marketplace B', short:'Segment B', color:'var(--segB)', bg:'var(--segB-bg)',
+       sub:'Scoped marketplace for Segment B. Publish here, then push products up to the EDM.'},
+};
+
+/* ---- Sources ---- */
+const SRC = {
+  snowflake:{n:'Snowflake', icon:'snowflake', c:'#2F9FD8'}, databricks:{n:'Databricks', icon:'database', c:'#D9503F'},
+  tableau:{n:'Tableau', icon:'barChart', c:'#4E79A7'}, bigquery:{n:'BigQuery', icon:'database', c:'#3B82F6'}, redshift:{n:'Redshift', icon:'database', c:'#C5401F'},
+};
+
+/* ---- Seed data products ---- */
+const SEED = [
+  /* ---- Segment A — Media, Streaming & Marketing ---- */
+  {id:'a1',seg:'A',edm:true, name:'Customer 360',owner:'Sally Holt',src:'snowflake',ic:'#6D5AE6',
+   desc:'Unified customer profiles combining CRM, web, and support data for a single view of every guest.',
+   fields:42,tables:6,lin:14,pop:98,domains:['Customer','Loyalty']},
+  {id:'a2',seg:'A',edm:true, name:'Subscription Churn Model',owner:'Marco Diaz',src:'databricks',ic:'#0E9488',
+   desc:'Propensity-to-churn scores refreshed daily, with the top drivers behind each at-risk subscriber.',
+   fields:18,tables:3,lin:9,pop:71,domains:['Subscriptions','ML']},
+  {id:'a3',seg:'A',edm:false,name:'Web Traffic Analytics',owner:'Priya Nair',src:'bigquery',ic:'#0073DD',
+   desc:'Sessionized clickstream and conversion funnels across all web and mobile properties.',
+   fields:55,tables:8,lin:21,pop:60,domains:['Web','Analytics']},
+  {id:'a4',seg:'A',edm:true, name:'Marketing Campaign Performance',owner:'Sally Holt',src:'tableau',ic:'#DE8138',
+   desc:'Comprehensive view of campaign spend, reach, and ROI across paid, owned, and earned channels.',
+   fields:31,tables:5,lin:12,pop:88,domains:['Marketing','Advertising']},
+  {id:'a5',seg:'A',edm:false,name:'Ad Spend ROI',owner:'Deepa Rao',src:'snowflake',ic:'#1E8E5A',
+   desc:'Blended return-on-ad-spend by channel and creative, reconciled against finance actuals.',
+   fields:24,tables:4,lin:8,pop:44,domains:['Advertising','Finance']},
+  {id:'a6',seg:'A',edm:true, name:'Store Sales Daily',owner:'Tom Fisher',src:'redshift',ic:'#B4468A',
+   desc:'Daily point-of-sale revenue, units, and margin by store, region, and product line.',
+   fields:37,tables:7,lin:16,pop:79,domains:['Retail','Sales']},
+  {id:'a7',seg:'A',edm:true, name:'Streaming Engagement',owner:'Jay Welker',src:'databricks',ic:'#7A2E6B',
+   desc:'Title-level watch time, completion, and engagement across the streaming platform.',
+   fields:48,tables:9,lin:22,pop:84,domains:['Streaming','Content']},
+  {id:'a8',seg:'A',edm:false,name:'Content Catalog Metadata',owner:'Nina Park',src:'snowflake',ic:'#2563EB',
+   desc:'Canonical metadata for every title — cast, genre, rights windows, and availability.',
+   fields:40,tables:6,lin:10,pop:52,domains:['Content','Studios']},
+  {id:'a9',seg:'A',edm:true, name:'Mobile App Telemetry',owner:'Raj Malhotra',src:'bigquery',ic:'#0E7A8F',
+   desc:'App events, crashes, and feature adoption across iOS and Android experiences.',
+   fields:61,tables:10,lin:28,pop:68,domains:['Mobile','Product']},
+  {id:'a10',seg:'A',edm:false,name:'Loyalty Rewards Ledger',owner:'Sally Holt',src:'snowflake',ic:'#B4468A',
+   desc:'Points earn-and-burn ledger and tier status across the loyalty program.',
+   fields:22,tables:4,lin:7,pop:49,domains:['Loyalty','Customer']},
+  {id:'a11',seg:'A',edm:false,name:'Email & Push Performance',owner:'Deepa Rao',src:'tableau',ic:'#DE8138',
+   desc:'Deliverability, open, and click performance for lifecycle email and push campaigns.',
+   fields:19,tables:3,lin:6,pop:41,domains:['Marketing','Growth']},
+  {id:'a12',seg:'A',edm:true, name:'Merchandising Sell-Through',owner:'Tom Fisher',src:'redshift',ic:'#C5601F',
+   desc:'Sell-through, markdowns, and margin by SKU across owned retail and e-commerce.',
+   fields:33,tables:5,lin:13,pop:63,domains:['Merchandising','Retail']},
+
+  /* ---- Segment B — Parks, Commerce & Operations ---- */
+  {id:'b1',seg:'B',edm:true, name:'Credit & Loan Analytics',owner:'Tony Baker',src:'databricks',ic:'#0E9488',
+   desc:'Comprehensive credit risk and loan portfolio analytics built from filings and internal ledgers.',
+   fields:48,tables:9,lin:29,pop:92,domains:['Finance','Risk']},
+  {id:'b2',seg:'B',edm:true, name:'Fraud Signals',owner:'Lena Ortiz',src:'snowflake',ic:'#C0392B',
+   desc:'Real-time fraud indicators and anomaly scores across transactions, devices, and accounts.',
+   fields:29,tables:5,lin:18,pop:83,domains:['Fraud','Security']},
+  {id:'b3',seg:'B',edm:false,name:'Supply Chain Inventory',owner:'Raj Malhotra',src:'snowflake',ic:'#8A6D3B',
+   desc:'Live inventory positions, in-transit stock, and days-of-supply across warehouses and suppliers.',
+   fields:40,tables:6,lin:15,pop:57,domains:['Supply Chain','Inventory']},
+  {id:'b4',seg:'B',edm:true, name:'Product Telemetry',owner:'Jay Welker',src:'databricks',ic:'#2C6FBB',
+   desc:'Device and feature usage telemetry powering reliability, adoption, and health dashboards.',
+   fields:63,tables:11,lin:33,pop:74,domains:['Product','Engineering']},
+  {id:'b5',seg:'B',edm:false,name:'HR Headcount & Attrition',owner:'Nina Park',src:'snowflake',ic:'#6D5AE6',
+   desc:'Headcount, hiring pipeline, and attrition trends by org, level, and location.',
+   fields:22,tables:4,lin:7,pop:38,domains:['People','HR']},
+  {id:'b6',seg:'B',edm:true, name:'Inventory Demand Forecast',owner:'Raj Malhotra',src:'bigquery',ic:'#0073DD',
+   desc:'ML demand forecasts by SKU and location driving replenishment and safety-stock decisions.',
+   fields:34,tables:5,lin:20,pop:66,domains:['Inventory','ML']},
+  {id:'b7',seg:'B',edm:true, name:'Park Attendance Forecast',owner:'Ana Gomez',src:'databricks',ic:'#0E7A8F',
+   desc:'Daily attendance and wait-time forecasts by park, land, and attraction.',
+   fields:44,tables:7,lin:19,pop:80,domains:['Parks','ML']},
+  {id:'b8',seg:'B',edm:true, name:'Guest Experience Surveys',owner:'Ken Ito',src:'snowflake',ic:'#DE8138',
+   desc:'Post-visit satisfaction, NPS, and verbatim feedback across parks and resorts.',
+   fields:27,tables:4,lin:9,pop:58,domains:['Guest Experience','Support']},
+  {id:'b9',seg:'B',edm:false,name:'Ticketing & Admissions',owner:'Ana Gomez',src:'redshift',ic:'#7A2E6B',
+   desc:'Ticket sales, redemptions, and admissions throughput by gate and product.',
+   fields:30,tables:5,lin:11,pop:54,domains:['Ticketing','Sales']},
+  {id:'b10',seg:'B',edm:true, name:'Logistics & Fulfillment',owner:'Raj Malhotra',src:'snowflake',ic:'#2563EB',
+   desc:'Shipment tracking, fulfillment SLAs, and carrier performance across the network.',
+   fields:38,tables:6,lin:14,pop:61,domains:['Logistics','Operations']},
+  {id:'b11',seg:'B',edm:true, name:'Payments & Settlement',owner:'Tony Baker',src:'databricks',ic:'#1E8E5A',
+   desc:'Authorizations, settlements, and chargeback trends across payment methods.',
+   fields:41,tables:7,lin:17,pop:70,domains:['Payments','Finance']},
+  {id:'b12',seg:'B',edm:false,name:'Compliance & Audit Logs',owner:'Lena Ortiz',src:'snowflake',ic:'#5A6B7B',
+   desc:'Immutable audit trail and control evidence for regulatory and internal compliance.',
+   fields:26,tables:5,lin:8,pop:36,domains:['Compliance','Legal']},
+  {id:'b13',seg:'B',edm:false,name:'Cruise Bookings',owner:'Ken Ito',src:'bigquery',ic:'#0E9488',
+   desc:'Sailings, cabin occupancy, and booking pace across the cruise line.',
+   fields:32,tables:5,lin:12,pop:47,domains:['Sales','Guest Experience']},
+  {id:'b14',seg:'B',edm:false,name:'Workforce Scheduling',owner:'Nina Park',src:'snowflake',ic:'#8A5A00',
+   desc:'Labor demand, shift coverage, and overtime across parks and resort operations.',
+   fields:24,tables:4,lin:9,pop:43,domains:['People','Operations']},
+];
+
+/* ---- Enterprise (EDM) domain taxonomy — curated, distinct from segment domains ---- */
+const EDM_DOMAINS=['Customer & Marketing','Media & Entertainment','Product & Technology','Data Science & AI','Finance & Risk','Security & Compliance','Operations & Supply Chain','Commerce & Retail','Sales & Partnerships','Parks & Experiences','People & Workplace','Guest & Loyalty'];
+const EDM_DOMAIN_META={
+  'Customer & Marketing':['megaphone','#DE8138'], 'Media & Entertainment':['radio','#7A2E6B'],
+  'Product & Technology':['box','#2C6FBB'], 'Data Science & AI':['cpu','#8A6D3B'],
+  'Finance & Risk':['dollar','#1E8E5A'], 'Security & Compliance':['shield','#C0392B'],
+  'Operations & Supply Chain':['truck','#2563EB'], 'Commerce & Retail':['cart','#B4468A'],
+  'Sales & Partnerships':['trendUp','#0E9488'], 'Parks & Experiences':['landmark','#0E7A8F'],
+  'People & Workplace':['users','#6D5AE6'], 'Guest & Loyalty':['sparkles','#DE8138'],
+};
+/* suggested map from a segment domain → an enterprise domain (pre-selects the picker) */
+const SEG_TO_EDM={
+  Customer:'Customer & Marketing', Marketing:'Customer & Marketing', Advertising:'Customer & Marketing', Growth:'Customer & Marketing',
+  Loyalty:'Guest & Loyalty', 'Guest Experience':'Guest & Loyalty', Support:'Guest & Loyalty',
+  Subscriptions:'Media & Entertainment', Streaming:'Media & Entertainment', Content:'Media & Entertainment', Studios:'Media & Entertainment',
+  Web:'Product & Technology', Mobile:'Product & Technology', Product:'Product & Technology', Engineering:'Product & Technology', Platform:'Product & Technology',
+  ML:'Data Science & AI', Analytics:'Data Science & AI',
+  Finance:'Finance & Risk', Pricing:'Finance & Risk', Payments:'Finance & Risk', Risk:'Finance & Risk',
+  Fraud:'Security & Compliance', Security:'Security & Compliance', Compliance:'Security & Compliance', Legal:'Security & Compliance',
+  Operations:'Operations & Supply Chain', 'Supply Chain':'Operations & Supply Chain', Logistics:'Operations & Supply Chain', Inventory:'Operations & Supply Chain',
+  Retail:'Commerce & Retail', Merchandising:'Commerce & Retail',
+  Sales:'Sales & Partnerships', Partnerships:'Sales & Partnerships',
+  Ticketing:'Parks & Experiences', Parks:'Parks & Experiences',
+  People:'People & Workplace', HR:'People & Workplace',
+};
+function suggestEdmDomains(p){
+  const s=new Set(); (p.domains||[]).forEach(d=>{ if(SEG_TO_EDM[d]) s.add(SEG_TO_EDM[d]); });
+  if(!s.size) s.add(EDM_DOMAINS[0]);
+  return [...s];
+}
+/* which domain list a product shows in the CURRENT view (enterprise vs segment) */
+function productDomains(p){ return state.section==='edm' ? (p.edmDomains||[]) : p.domains; }
+
+/* ---- Persisted state ---- */
+const LS='edm_proto_v1';
+const LS_NEW='edm_proto_new_v1';
+function loadState(){
+  let saved={}; try{saved=JSON.parse(localStorage.getItem(LS))||{}}catch(e){}
+  let created=[]; try{created=JSON.parse(localStorage.getItem(LS_NEW))||[]}catch(e){}
+  const products=[...SEED,...created].map(p=>({
+    ...p,
+    edm: saved.edm && (p.id in saved.edm) ? saved.edm[p.id] : !!p.edm,
+    bm:  saved.bm  ? !!saved.bm[p.id] : false,
+    edmDomains: (saved.edmDomains && saved.edmDomains[p.id]) ? saved.edmDomains[p.id] : (p.edm ? suggestEdmDomains(p) : []),
+  }));
+  return {products, section:'edm', view:'marketplace', mktTab:'home', manageTab:'design', navOpen:false, domainsExpanded:false, sort:'unsorted', filter:'all', q:''};
+}
+function persist(){
+  const edm={},bm={},ed={};
+  state.products.forEach(p=>{edm[p.id]=p.edm; if(p.bm)bm[p.id]=true; if(p.edmDomains&&p.edmDomains.length)ed[p.id]=p.edmDomains;});
+  localStorage.setItem(LS,JSON.stringify({edm,bm,edmDomains:ed}));
+}
+function persistNew(){
+  const created=state.products.filter(p=>p.created).map(p=>({id:p.id,seg:p.seg,edm:false,name:p.name,owner:p.owner,src:p.src,ic:p.ic,desc:p.desc,fields:p.fields,tables:p.tables,lin:p.lin,pop:p.pop,domains:p.domains,created:true}));
+  localStorage.setItem(LS_NEW,JSON.stringify(created));
+}
+let state=loadState();
+
+/* ============================================================
+   Home customization (per marketplace) — everything editable
+   ============================================================ */
+const BG_PRESETS={
+  default:`linear-gradient(115deg,rgba(0,42,72,.92) 0%,rgba(0,65,107,.78) 42%,rgba(0,115,176,.62) 100%),radial-gradient(120% 140% at 85% 15%,rgba(241,105,35,.55),transparent 55%),linear-gradient(160deg,#0a2a44,#0e5c8f)`,
+  royal:`linear-gradient(120deg,#0a1a4f,#243b8f 55%,#3f6fd6)`,
+  ocean:`linear-gradient(120deg,#062e46,#0b6a8f 55%,#12a2a3)`,
+  sunset:`linear-gradient(120deg,#3a1c71,#b5316f 55%,#e06d3a)`,
+  forest:`linear-gradient(120deg,#12351f,#2c5f2d 55%,#5a9367)`,
+  charcoal:`linear-gradient(120deg,#1c2530,#37474f 55%,#5a6b7b)`,
+};
+const BG_NAMES={default:'Disney',royal:'Royal',ocean:'Ocean',sunset:'Sunset',forest:'Forest',charcoal:'Charcoal'};
+/* built-in background IMAGES (inline SVG data URIs — no external assets) */
+const svgURI=s=>'data:image/svg+xml,'+encodeURIComponent(s);
+const BG_IMAGES={
+  aurora:svgURI(`<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='600'><defs><radialGradient id='a' cx='18%' cy='28%' r='60%'><stop offset='0' stop-color='#5b8def'/><stop offset='1' stop-color='#0a2036' stop-opacity='0'/></radialGradient><radialGradient id='b' cx='82%' cy='18%' r='55%'><stop offset='0' stop-color='#f16923'/><stop offset='1' stop-color='#0a2036' stop-opacity='0'/></radialGradient><radialGradient id='c' cx='60%' cy='95%' r='60%'><stop offset='0' stop-color='#12a2a3'/><stop offset='1' stop-color='#0a2036' stop-opacity='0'/></radialGradient></defs><rect width='1200' height='600' fill='#0a2036'/><rect width='1200' height='600' fill='url(#a)'/><rect width='1200' height='600' fill='url(#b)'/><rect width='1200' height='600' fill='url(#c)'/></svg>`),
+  waves:svgURI(`<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='600'><rect width='1200' height='600' fill='#0b2c4a'/><path d='M0 400 Q300 320 600 400 T1200 400 V600 H0 Z' fill='#0e5c8f' opacity='.65'/><path d='M0 460 Q300 390 600 460 T1200 460 V600 H0 Z' fill='#12a2a3' opacity='.5'/><path d='M0 520 Q300 455 600 520 T1200 520 V600 H0 Z' fill='#f16923' opacity='.35'/></svg>`),
+  prism:svgURI(`<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='600'><rect width='1200' height='600' fill='#141a3a'/><g opacity='.55'><polygon points='0,0 420,0 0,420' fill='#3f6fd6'/><polygon points='1200,0 780,0 1200,520' fill='#b5316f'/><polygon points='560,600 260,600 560,300' fill='#12a2a3'/><polygon points='900,600 1200,600 1200,300' fill='#f16923'/></g></svg>`),
+  mesh:svgURI(`<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='600'><rect width='1200' height='600' fill='#101a2e'/><g><circle cx='200' cy='150' r='260' fill='#243b8f' opacity='.55'/><circle cx='1000' cy='120' r='240' fill='#0e7a8f' opacity='.5'/><circle cx='700' cy='560' r='300' fill='#7a2e6b' opacity='.5'/><circle cx='420' cy='480' r='200' fill='#c2601f' opacity='.45'/></g></svg>`),
+};
+const BG_IMG_NAMES={aurora:'Aurora',waves:'Waves',prism:'Prism',mesh:'Mesh'};
+
+const LS_C='edm_proto_custom_v1';
+let customize={}; try{customize=JSON.parse(localStorage.getItem(LS_C))||{}}catch(e){}
+
+/* Full defaults for a section — appearance + ALL text + section visibility */
+function czDefaults(secId){
+  const sec=SECTIONS[secId]; const isEDM=secId==='edm';
+  return {
+    /* appearance */
+    logoImg:null, logoText1:"Disney's", logoText2:'Data Marketplace',
+    bg:'default', bgImg:null, searchSize:'md',
+    /* hero text */
+    eyebrow: isEDM?'Enterprise · Company-wide':sec.short+' · Scoped marketplace',
+    title: sec.name,
+    tagline: isEDM
+      ? 'Discover trusted, governed data products from across every business segment — all in one place.'
+      : `Find and publish data products for ${sec.short}, then push your best up to the enterprise marketplace.`,
+    heroAlign:'center',
+    /* search */
+    searchPlaceholder:'Search data products, domains, owners…',
+    searchBtn:'Search',
+    /* welcome */
+    welcomeTitle: isEDM?"Welcome to Disney's Enterprise Data Marketplace":'Welcome to '+sec.name,
+    welcomeBody: isEDM
+      ? "Your front door to Disney's trusted data. Browse by domain, search across every segment, and request access — all in one governed catalog."
+      : `Everything published in ${sec.short} lives here. Publish products for your teams and promote the best ones to the enterprise marketplace.`,
+    /* section headings */
+    domainsTitle:'Domains', domainsSub:'Browse data products by business domain.', domainCount:null,
+    popularTitle:'Most Popular Data Products', popularSub:`Top products in ${sec.name} by usage.`,
+    browseTitle:'Browse Data Products', browseSub: isEDM?'Every product below was published in a segment and pushed up to the EDM for company-wide discovery.':'All data products in this segment marketplace.',
+    recentTitle:'Recently Used Data Products', recentSub:'Based on your recent activity.',
+    customTitle:'Other Customizable Sections', customSub:'Admins can add curated rows here.',
+    customCardTitle:'Add a custom section', customCardBody:'Feature a collection, a team’s products, “New this week”, or an embedded dashboard.',
+    customCardBtn:'+ Add section',
+    accessTitle:'Access Manager', accessBody:'Request, review, and manage access to data products.', accessBtn:'Open Access Manager ↗',
+    /* visibility */
+    show:{welcome:true,domains:true,popular:true,recent:true,custom:true,access:true},
+  };
+}
+/* sparse per-section overrides */
+function czRaw(){ if(!customize[state.section]) customize[state.section]={}; return customize[state.section]; }
+/* merged view used for rendering */
+function czView(){
+  const def=czDefaults(state.section), o=customize[state.section]||{};
+  const v={...def,...o}; v.show={...def.show,...(o.show||{})}; return v;
+}
+function czSet(k,val){ czRaw()[k]=val; persistCustom(); }
+function czSetShow(k,val){ const r=czRaw(); r.show={...(r.show||{}),[k]:val}; persistCustom(); }
+function czResetSection(){ delete customize[state.section]; persistCustom(); }
+function persistCustom(){ try{localStorage.setItem(LS_C,JSON.stringify(customize));}catch(e){toast('⚠️ Image too large to save in this browser');} }
+const escapeHtml=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function logoInner(cz){
+  return cz.logoImg
+    ? `<span class="logo-plate"><img src="${cz.logoImg}" alt="Logo" style="max-height:72px;max-width:280px;object-fit:contain"/></span>`
+    : `<div class="lmark">${icon('landmark',26,1.6)}</div><div class="lt">${escapeHtml(cz.logoText1)||'&nbsp;'}<small>${escapeHtml(cz.logoText2)}</small></div>`;
+}
+function bgStyleFor(cz){
+  return (cz.bg==='custom'&&cz.bgImg)
+    ? `background:linear-gradient(115deg,rgba(0,18,36,.74),rgba(0,18,36,.34)),url("${cz.bgImg}") center/cover`
+    : 'background:'+(BG_PRESETS[cz.bg]||BG_PRESETS.default);
+}
+/* downscale an uploaded image to a data URL so it fits in localStorage */
+function fileToDataURL(file,maxW,maxH,cb){
+  const r=new FileReader();
+  r.onload=e=>{const img=new Image();img.onload=()=>{
+    let w=img.width,h=img.height;const s=Math.min(1,maxW/w,maxH/h);
+    w=Math.round(w*s);h=Math.round(h*s);
+    const cv=document.createElement('canvas');cv.width=w;cv.height=h;
+    cv.getContext('2d').drawImage(img,0,0,w,h);
+    const png=/png|gif|svg/i.test(file.type);
+    cb(cv.toDataURL(png?'image/png':'image/jpeg',0.85));
+  };img.src=e.target.result;};
+  r.readAsDataURL(file);
+}
+/* live preview for Manage → Home page design (re-renders only the preview pane;
+   controls live in a separate subtree so text-input focus/caret are preserved) */
+function czPreview(){ const pv=document.getElementById('mgrPv'); if(pv){ pv.innerHTML=''; renderHome(pv,true); } }
+/* rebuild the controls column (after a button click) + preview, preserving scroll */
+function czRefresh(){ const c=document.getElementById('mgrControls'); if(c){ const st=c.scrollTop; c.innerHTML=''; buildControls(c); c.scrollTop=st; } czPreview(); }
+
+/* --- small control builders --- */
+function czField(label,key,{textarea,ph}={}){
+  const wrap=el('div','cz-field');
+  wrap.innerHTML=`<label>${label}</label>`;
+  const inp=document.createElement(textarea?'textarea':'input');
+  if(textarea) inp.rows=2;
+  inp.value=czView()[key]||''; if(ph) inp.placeholder=ph;
+  inp.oninput=()=>{ czSet(key,inp.value); czPreview(); };   // preview only → caret kept
+  wrap.appendChild(inp); return wrap;
+}
+function czSelect(label,key,opts){
+  const wrap=el('div','cz-field'); wrap.innerHTML=`<label>${label}</label>`;
+  const s=document.createElement('select');
+  opts.forEach(([v,t])=>{ const o=document.createElement('option'); o.value=v; o.textContent=t; s.appendChild(o); });
+  s.value=String(czView()[key]);
+  s.onchange=()=>{ const v=s.value; czSet(key, v==='all'?'all':(+v||v)); czPreview(); };
+  wrap.appendChild(s); return wrap;
+}
+function czNumber(label,key,ph){
+  const wrap=el('div','cz-field'); wrap.innerHTML=`<label>${label}</label>`;
+  const inp=document.createElement('input'); inp.type='number'; inp.min='1'; if(ph) inp.placeholder=ph;
+  const v=czView()[key]; inp.value=(v==null||v==='')?'':v;
+  inp.oninput=()=>{ const n=parseInt(inp.value,10); czSet(key,(inp.value===''||isNaN(n)||n<1)?null:n); czPreview(); };
+  wrap.appendChild(inp); return wrap;
+}
+function czSectionHead(title,showKey){
+  const row=el('div','cz-sechead');
+  row.innerHTML=`<span class="cz-lbl" style="margin:0">${title}</span>`;
+  if(showKey){
+    const on=czView().show[showKey]!==false;
+    const lab=el('label','sw');
+    lab.innerHTML=`<input type="checkbox" ${on?'checked':''}/><span></span>`;
+    lab.title='Show / hide this section';
+    lab.querySelector('input').onchange=e=>{ czSetShow(showKey,e.target.checked); czPreview(); };
+    row.appendChild(lab);
+  }
+  return row;
+}
+
+/* Build the full set of Home-page customization controls into `container` */
+function buildControls(container){
+  const cz=czView();
+
+  /* --- LOGO --- */
+  const gLogo=el('div','cz-group');
+  gLogo.appendChild(czSectionHead('Logo'));
+  gLogo.innerHTML+=`<div class="cz-logo-prev" id="czLogoPrev">${logoInner(cz)}</div>
+    <div class="cz-row" style="margin:10px 0">
+      <button class="cz-upload" id="czLogoUp">⬆ Upload logo</button>
+      <button class="cz-ghost" id="czLogoClear">Use placeholder</button></div>`;
+  gLogo.appendChild(czField('Logo text — line 1','logoText1'));
+  gLogo.appendChild(czField('Logo text — line 2','logoText2'));
+  container.appendChild(gLogo);
+
+  /* --- BACKGROUND --- */
+  const gBg=el('div','cz-group');
+  gBg.appendChild(czSectionHead('Background — gradient'));
+  const sw=el('div','swatches');
+  Object.keys(BG_PRESETS).forEach(k=>{
+    const d=el('button','swatch'+(cz.bg===k?' sel':''));
+    d.setAttribute('style','background:'+BG_PRESETS[k]);
+    d.innerHTML=`<span class="sn">${BG_NAMES[k]}</span>`;
+    d.onclick=()=>{ czSet('bg',k); czRefresh(); };
+    sw.appendChild(d);
+  });
+  gBg.appendChild(sw);
+  const lblImg=el('span','cz-lbl'); lblImg.style.marginTop='16px'; lblImg.textContent='Background — image';
+  gBg.appendChild(lblImg);
+  const swi=el('div','swatches');
+  Object.keys(BG_IMAGES).forEach(k=>{
+    const sel=cz.bg==='custom'&&cz.bgImg===BG_IMAGES[k];
+    const d=el('button','swatch'+(sel?' sel':''));
+    d.setAttribute('style',`background:url("${BG_IMAGES[k]}") center/cover`);
+    d.innerHTML=`<span class="sn">${BG_IMG_NAMES[k]}</span>`;
+    d.onclick=()=>{ czSet('bgImg',BG_IMAGES[k]); czSet('bg','custom'); czRefresh(); };
+    swi.appendChild(d);
+  });
+  if(cz.bg==='custom'&&cz.bgImg&&!Object.values(BG_IMAGES).includes(cz.bgImg)){
+    const d=el('button','swatch sel'); d.setAttribute('style',`background:url("${cz.bgImg}") center/cover`);
+    d.innerHTML=`<span class="sn">Uploaded</span>`; swi.appendChild(d);
+  }
+  gBg.appendChild(swi);
+  const bgRow=el('div','cz-row'); bgRow.style.marginTop='10px';
+  bgRow.innerHTML=`<button class="cz-upload" id="czBgUp">⬆ Upload image</button><button class="cz-ghost" id="czBgClear">Remove image</button>`;
+  gBg.appendChild(bgRow);
+  container.appendChild(gBg);
+
+  /* --- SEARCH BAR --- */
+  const gS=el('div','cz-group');
+  gS.appendChild(czSectionHead('Search bar'));
+  const seg=el('div','size-seg'); seg.style.margin='4px 0 4px';
+  seg.innerHTML=`<button data-s="sm">Small</button><button data-s="md">Medium</button><button data-s="lg">Large</button>`;
+  seg.querySelectorAll('button').forEach(b=>{
+    if(b.dataset.s===(cz.searchSize||'md')) b.classList.add('sel');
+    b.onclick=()=>{ czSet('searchSize',b.dataset.s); czRefresh(); };
+  });
+  gS.appendChild(seg);
+  gS.appendChild(czField('Placeholder text','searchPlaceholder'));
+  gS.appendChild(czField('Button label','searchBtn'));
+  container.appendChild(gS);
+
+  /* --- HERO TEXT --- */
+  const gH=el('div','cz-group');
+  gH.appendChild(czSectionHead('Hero text'));
+  gH.appendChild(czField('Eyebrow','eyebrow'));
+  gH.appendChild(czField('Title','title'));
+  gH.appendChild(czField('Tagline','tagline',{textarea:true}));
+  gH.appendChild(czSelect('Alignment','heroAlign',[['center','Center'],['left','Left']]));
+  container.appendChild(gH);
+
+  /* --- WELCOME --- */
+  const gW=el('div','cz-group');
+  gW.appendChild(czSectionHead('Welcome message','welcome'));
+  gW.appendChild(czField('Heading','welcomeTitle'));
+  gW.appendChild(czField('Body','welcomeBody',{textarea:true}));
+  container.appendChild(gW);
+
+  /* --- DOMAINS --- */
+  const gD=el('div','cz-group');
+  gD.appendChild(czSectionHead('Domains section','domains'));
+  gD.appendChild(czField('Heading','domainsTitle'));
+  gD.appendChild(czField('Subtext','domainsSub'));
+  gD.appendChild(czNumber('Domains shown by default','domainCount','Number of domains (blank = 2 rows)'));
+  container.appendChild(gD);
+
+  /* --- MOST POPULAR (Home teaser) --- */
+  const gP=el('div','cz-group');
+  gP.appendChild(czSectionHead('Most popular (Home)','popular'));
+  gP.appendChild(czField('Heading','popularTitle'));
+  gP.appendChild(czField('Subtext','popularSub'));
+  container.appendChild(gP);
+
+  /* --- BROWSE PAGE header --- */
+  const gBrowse=el('div','cz-group');
+  gBrowse.appendChild(czSectionHead('Browse page'));
+  gBrowse.appendChild(czField('Heading','browseTitle'));
+  gBrowse.appendChild(czField('Subtext','browseSub'));
+  container.appendChild(gBrowse);
+
+  /* --- RECENT --- */
+  const gR=el('div','cz-group');
+  gR.appendChild(czSectionHead('Recently used section','recent'));
+  gR.appendChild(czField('Heading','recentTitle'));
+  gR.appendChild(czField('Subtext','recentSub'));
+  container.appendChild(gR);
+
+  /* --- CUSTOM SECTIONS --- */
+  const gC=el('div','cz-group');
+  gC.appendChild(czSectionHead('“Other sections” block','custom'));
+  gC.appendChild(czField('Heading','customTitle'));
+  gC.appendChild(czField('Subtext','customSub'));
+  gC.appendChild(czField('Card title','customCardTitle'));
+  gC.appendChild(czField('Card body','customCardBody',{textarea:true}));
+  gC.appendChild(czField('Card button','customCardBtn'));
+  container.appendChild(gC);
+
+  /* --- ACCESS MANAGER --- */
+  const gA=el('div','cz-group');
+  gA.appendChild(czSectionHead('Access Manager','access'));
+  gA.appendChild(czField('Title','accessTitle'));
+  gA.appendChild(czField('Body','accessBody'));
+  gA.appendChild(czField('Button label','accessBtn'));
+  container.appendChild(gA);
+
+  /* reset footer */
+  const foot=el('div','cz-foot');
+  foot.innerHTML=`<button class="reset">Reset to defaults</button>`;
+  foot.querySelector('.reset').onclick=()=>{ czResetSection(); czRefresh(); toast('Home page reset to defaults'); };
+  container.appendChild(foot);
+
+  /* wire uploads / clears */
+  container.querySelector('#czLogoUp').onclick=()=>document.getElementById('czLogoFile').click();
+  container.querySelector('#czLogoClear').onclick=()=>{ czSet('logoImg',null); czRefresh(); };
+  container.querySelector('#czBgUp').onclick=()=>document.getElementById('czBgFile').click();
+  container.querySelector('#czBgClear').onclick=()=>{ czSet('bgImg',null); if(czView().bg==='custom')czSet('bg','default'); czRefresh(); };
+}
+
+/* ---- Helpers ---- */
+const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
+const initials=n=>n.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+
+/* ---- Inline line-icon set (clean, consistent — no emoji) ---- */
+const ICONS={
+  store:`<path d="M4 9h16l-1-5H5L4 9z"/><path d="M5 9v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9"/><path d="M9 20v-5h6v5"/>`,
+  grid:`<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/>`,
+  bookmark:`<path d="M19 21l-7-4.5L5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>`,
+  settings:`<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 0 1-4 0v-.1A1.6 1.6 0 0 0 6.5 19.5l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0-1.1-2.7H2a2 2 0 0 1 0-4h.1A1.6 1.6 0 0 0 3.6 6.5l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H8a1.6 1.6 0 0 0 1-1.5V2a2 2 0 0 1 4 0v.1a1.6 1.6 0 0 0 2.7 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V8a1.6 1.6 0 0 0 1.5 1H22a2 2 0 0 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"/>`,
+  sliders:`<line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1.5" y1="14" x2="6.5" y2="14"/><line x1="9.5" y1="8" x2="14.5" y2="8"/><line x1="17.5" y1="16" x2="22.5" y2="16"/>`,
+  search:`<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>`,
+  help:`<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2.5-3 2.5"/><line x1="12" y1="17" x2="12.01" y2="17"/>`,
+  user:`<circle cx="12" cy="8" r="4"/><path d="M5.5 21a6.5 6.5 0 0 1 13 0"/>`,
+  users:`<path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="9.5" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/>`,
+  megaphone:`<path d="m3 11 15-5v13L3 15v-4z"/><path d="M3 11H2a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h1"/><path d="M8 15.5V19a2 2 0 0 0 3.8.9"/>`,
+  trendUp:`<path d="M22 7 13.5 15.5 8.5 10.5 2 17"/><path d="M16 7h6v6"/>`,
+  trendDown:`<path d="M22 17 13.5 8.5 8.5 13.5 2 7"/><path d="M16 17h6v-6"/>`,
+  globe:`<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18z"/>`,
+  dollar:`<line x1="12" y1="2" x2="12" y2="22"/><path d="M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>`,
+  shield:`<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>`,
+  alert:`<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><line x1="12" y1="9" x2="12" y2="13.5"/><line x1="12" y1="17" x2="12.01" y2="17"/>`,
+  cart:`<circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.2 11a1.6 1.6 0 0 0 1.6 1.3h8.5a1.6 1.6 0 0 0 1.6-1.3L21 7H6"/>`,
+  box:`<path d="M21 8v8a2 2 0 0 1-1 1.7l-7 4a2 2 0 0 1-2 0l-7-4A2 2 0 0 1 3 16V8a2 2 0 0 1 1-1.7l7-4a2 2 0 0 1 2 0l7 4A2 2 0 0 1 21 8z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>`,
+  cpu:`<rect x="4" y="4" width="16" height="16" rx="2.5"/><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M9 1.5v2.5M15 1.5v2.5M9 20v2.5M15 20v2.5M1.5 9H4M1.5 15H4M20 9h2.5M20 15h2.5"/>`,
+  wrench:`<path d="M14.5 5.5a4 4 0 0 0-5.2 5.2L3 17l4 4 6.3-6.3a4 4 0 0 0 5.2-5.2l-2.6 2.6-2.6-.7-.7-2.6z"/>`,
+  truck:`<path d="M3 5h11v10H3z"/><path d="M14 8h4l3 3v4h-7z"/><circle cx="6.5" cy="18" r="1.6"/><circle cx="17.5" cy="18" r="1.6"/>`,
+  database:`<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/>`,
+  snowflake:`<path d="M12 2v20M3.4 7l17.2 10M20.6 7 3.4 17"/><path d="m8.5 4 3.5 2 3.5-2M8.5 20l3.5-2 3.5 2M4 9.5 5 12l-1 2.5M20 9.5 19 12l1 2.5"/>`,
+  barChart:`<path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="7" rx=".5"/><rect x="12" y="6" width="3" height="11" rx=".5"/><rect x="17" y="13" width="3" height="4" rx=".5"/>`,
+  radio:`<circle cx="12" cy="12" r="2"/><path d="M4.9 4.9a10 10 0 0 1 14.2 0M7.8 7.8a6 6 0 0 1 8.4 0M16.2 16.2a6 6 0 0 1-8.4 0M19.1 19.1a10 10 0 0 1-14.2 0"/>`,
+  landmark:`<path d="M3 21h18M4 10h16M5 21V10M19 21V10M9 21V13M15 21V13M12 3 3.5 7.5h17z"/>`,
+  columns:`<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M15 4v16"/>`,
+  rows:`<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9.3h18M3 14.6h18"/>`,
+  lineage:`<circle cx="18" cy="6" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="18" r="2.6"/><path d="M8.4 10.7 15.6 7M8.4 13.3 15.6 17"/>`,
+  clock:`<circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 1.8"/>`,
+  check:`<path d="M20 6 9 17l-5-5"/>`,
+  x:`<path d="M18 6 6 18M6 6l12 12"/>`,
+  plus:`<path d="M12 5v14M5 12h14"/>`,
+  arrowUp:`<path d="M12 19V5M6 11l6-6 6 6"/>`,
+  key:`<circle cx="8" cy="15" r="4.5"/><path d="m11 12 8-8M16.5 6.5 19 9M14.5 8.5 17 11"/>`,
+  sparkles:`<path d="M12 3.5 13.6 8 18 9.6 13.6 11.2 12 15.7 10.4 11.2 6 9.6 10.4 8z"/><path d="M18.5 14.5 19.3 16.7 21.5 17.5 19.3 18.3 18.5 20.5 17.7 18.3 15.5 17.5 17.7 16.7z"/>`,
+  layers:`<path d="m12 2 9 5-9 5-9-5 9-5z"/><path d="m3 12 9 5 9-5M3 17l9 5 9-5"/>`,
+  home:`<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5"/><path d="M9.5 21v-6h5v6"/>`,
+  tag:`<path d="M20.6 13.4 12 22l-9-9V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/>`,
+  chevronDown:`<path d="m6 9 6 6 6-6"/>`,
+  chevronUp:`<path d="m6 15 6-6 6 6"/>`,
+};
+function icon(name,size,stroke){
+  const p=ICONS[name]||ICONS.tag;
+  return `<svg class="ico" width="${size||18}" height="${size||18}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${stroke||1.7}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+}
+const PRODUCT_ICON={
+  a1:'user',a2:'trendDown',a3:'globe',a4:'megaphone',a5:'dollar',a6:'cart',
+  a7:'radio',a8:'layers',a9:'radio',a10:'sparkles',a11:'megaphone',a12:'cart',
+  b1:'landmark',b2:'shield',b3:'box',b4:'radio',b5:'users',b6:'trendUp',
+  b7:'landmark',b8:'sparkles',b9:'tag',b10:'truck',b11:'dollar',b12:'check',b13:'trendUp',b14:'users'};
+const productIcon=p=>PRODUCT_ICON[p.id]||'box';
+function productsFor(sec){
+  if(sec==='edm') return state.products.filter(p=>p.edm);
+  return state.products.filter(p=>p.seg===sec);
+}
+function toast(msg){
+  const t=document.getElementById('toast'); t.innerHTML=msg; t.classList.add('show');
+  clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+/* ---- Icon rail: marketplace switcher ---- */
+function renderRail(){
+  const rail=document.getElementById('rail'); rail.innerHTML='';
+  const store=el('button','rail-store',icon('grid',18,1.9)); store.title='Data Products App menu';
+  store.onclick=()=>{ state.navOpen=!state.navOpen; render(); };
+  rail.appendChild(store);
+  rail.appendChild(el('div','rail-div'));
+  const meta={edm:['landmark','EDM'],A:['box','Segment A'],B:['box','Segment B']};
+  [SECTIONS.edm,SECTIONS.A,SECTIONS.B].forEach(sec=>{
+    const [g,label]=meta[sec.id];
+    const b=el('button','rail-item'+(state.section===sec.id?' active':''));
+    b.title=sec.name;
+    b.innerHTML=`<span class="rtile">${icon(g,19,1.7)}</span><span class="rlabel">${label}</span>`;
+    if(state.section===sec.id) b.querySelector('.rtile').style.background=sec.color;
+    b.onclick=()=>{ state.section=sec.id; state.filter='all'; state.q=''; render(); };
+    rail.appendChild(b);
+  });
+}
+
+/* ---- Nav panel: per-section Data Products App menu ---- */
+function renderNavPanel(){
+  const sec=SECTIONS[state.section];
+  document.getElementById('npName').textContent=sec.name;
+  const cr=document.getElementById('crumbName'); if(cr) cr.textContent=sec.name;
+  const sc=document.getElementById('npScope');
+  sc.textContent=sec.id==='edm'?'Top-level':sec.short; sc.style.color=sec.color; sc.style.background=sec.bg;
+  const menu=document.getElementById('navMenu'); menu.innerHTML='';
+  const isEDM=state.section==='edm';
+  const bmCount=productsFor(state.section).filter(p=>p.bm).length;
+  const items=[
+    ['marketplace','store','The Marketplace',''],
+    ['bookmarks','bookmark','My Bookmarks',bmCount||''],
+    ['auth','key','Manage Authentication',''],
+  ];
+  // Data products are authored in a segment, not at the top-level EDM
+  if(!isEDM) items.push(['myproducts','box','My Data Products','+new']);
+  items.push(['manage','sliders','Manage','']);
+  const isMkt=state.view==='marketplace';
+  items.forEach(([v,ic,label,extra])=>{
+    let active;
+    if(v==='marketplace') active = isMkt && state.mktTab!=='bookmarks';
+    else if(v==='bookmarks') active = isMkt && state.mktTab==='bookmarks';
+    else active = state.view===v;
+    const b=el('button','np-item'+(active?' active':''));
+    const cntHTML = (extra && extra!=='+new') ? `<span class="cnt">${extra}</span>` : '';
+    b.innerHTML=`<span class="ic">${icon(ic,17)}</span><span>${label}</span>${cntHTML}`;
+    b.onclick=()=>{
+      if(v==='marketplace'){ state.view='marketplace'; if(state.mktTab==='bookmarks') state.mktTab='home'; }
+      else if(v==='bookmarks'){ state.view='marketplace'; state.mktTab='bookmarks'; }
+      else state.view=v;
+      render();
+    };
+    if(extra==='+new'){
+      const nb=el('button','np-new',`${icon('plus',12,2.4)} New`);
+      nb.title='Create a data product';
+      nb.onclick=e=>{ e.stopPropagation(); state.view='myproducts'; render(); setTimeout(openCreateModal,0); };
+      b.appendChild(nb);
+    }
+    menu.appendChild(b);
+  });
+}
+
+/* ---- Card ---- */
+function card(p){
+  const c=el('div','pcard');
+  const src=SRC[p.src];
+  const isEDM=state.section==='edm';
+  const originSeg=SECTIONS[p.seg];
+  const originHTML = isEDM
+    ? `<span class="origin" style="color:${originSeg.color};background:${originSeg.bg}">${icon('arrowUp',12,2)} From ${originSeg.short}</span>`
+    : '';
+  const [scls,slbl]=sensOf(p);
+  c.innerHTML=`
+    <button class="bm ${p.bm?'on':''}" title="Bookmark">${icon('bookmark',18)}</button>
+    <div class="p-icon" style="background:${p.ic}">${icon(productIcon(p),23,1.7)}</div>
+    <h4>${p.name}</h4>
+    <div class="p-owner"><span class="oav">${initials(p.owner)}</span>${p.owner}</div>
+    <div class="p-source"><span class="p-src" style="color:${src.c}">${icon(src.icon,16)}</span>${src.n}<span class="sens ${scls}" style="margin-left:auto">${slbl}</span></div>
+    ${originHTML}
+    <p class="p-desc">${p.desc}</p>
+    <div class="p-stats">
+      <span title="Fields">${icon('columns',15)} ${p.fields}</span>
+      <span title="Tables">${icon('rows',15)} ${p.tables}</span>
+      <span title="Lineage">${icon('lineage',15)} ${p.lin}</span>
+    </div>
+    <div class="p-pills">${productDomains(p).map(d=>`<span class="pill">${d}</span>`).join('')}</div>
+  `;
+  // bookmark toggle
+  c.querySelector('.bm').onclick=()=>{
+    p.bm=!p.bm; persist();
+    toast(p.bm?`Bookmarked “${p.name}”`:`Removed “${p.name}” from bookmarks`);
+    render();
+  };
+  // segment footer: push-to-EDM flow (with enterprise-domain mapping)
+  if(!isEDM){
+    const f=el('div','p-footer');
+    if(p.edm){
+      const chips=(p.edmDomains||[]).map(d=>`<span class="pill edm-pill">${d}</span>`).join('');
+      f.innerHTML=`<div class="pushed-row"><span class="pushed-tag">${icon('check',13,2.2)} In EDM</span>${chips}</div>`;
+      const acts=el('div','push-acts');
+      const edit=el('button','link-btn','Edit domains'); edit.onclick=()=>openPushModal(p);
+      const undo=el('button','link-btn','Remove'); undo.onclick=()=>{p.edm=false;persist();toast(`Removed “${p.name}” from the EDM`);render();};
+      acts.appendChild(edit); acts.appendChild(undo); f.appendChild(acts);
+    }else{
+      const btn=el('button','push-btn',`${icon('arrowUp',15,2)} Push to EDM`); btn.onclick=()=>openPushModal(p);
+      f.appendChild(btn);
+    }
+    c.appendChild(f);
+  }
+  return c;
+}
+
+/* ---- Push-to-EDM dialog: choose which ENTERPRISE domain(s) to publish into ---- */
+function openPushModal(p){
+  const isEdit=!!p.edm;
+  const seg=SECTIONS[p.seg];
+  const selected=new Set(p.edmDomains&&p.edmDomains.length?p.edmDomains:suggestEdmDomains(p));
+  const ov=el('div','modal-overlay');
+  ov.innerHTML=`<div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <div><div class="modal-kicker">${isEdit?'Edit enterprise domains':'Publish to the Enterprise Data Marketplace'}</div>
+        <h3>${escapeHtml(p.name)}</h3></div>
+      <button class="hp-icon-btn mclose" title="Close">${icon('x',15)}</button>
+    </div>
+    <div class="modal-body">
+      <div class="mnote"><span style="display:inline-flex;vertical-align:-.2em;margin-right:5px">${icon('landmark',15)}</span>Enterprise domains are curated separately from <b>${seg.short}</b> domains. Choose where this product should appear in the top-level EDM.</div>
+      <div class="mfield"><span class="mlbl">Its ${seg.short} domains</span>
+        <div class="mchips">${p.domains.map(d=>`<span class="pill">${d}</span>`).join('')}</div></div>
+      <div class="mfield"><span class="mlbl">Publish into enterprise domain(s)</span>
+        <div class="dpick" id="dpick"></div></div>
+    </div>
+    <div class="modal-foot">
+      <button class="mcancel">Cancel</button>
+      <button class="mok">${isEdit?'Save changes':icon('arrowUp',15,2)+' Publish to EDM'}</button>
+    </div></div>`;
+  document.body.appendChild(ov);
+  const pick=ov.querySelector('#dpick'), ok=ov.querySelector('.mok');
+  const renderPick=()=>{
+    pick.innerHTML='';
+    EDM_DOMAINS.forEach(d=>{
+      const [ic,color]=domainMeta(d); const on=selected.has(d);
+      const b=el('button','dpick-item'+(on?' on':''));
+      b.innerHTML=`<span class="di" style="background:${color}">${icon(ic,17)}</span><span class="dl">${d}</span><span class="dck">${on?icon('check',15,2.4):''}</span>`;
+      b.onclick=()=>{ on?selected.delete(d):selected.add(d); renderPick(); ok.disabled=!selected.size; };
+      pick.appendChild(b);
+    });
+    ok.disabled=!selected.size;
+  };
+  renderPick();
+  const close=()=>{ ov.remove(); document.removeEventListener('keydown',esc); };
+  const esc=e=>{ if(e.key==='Escape') close(); };
+  document.addEventListener('keydown',esc);
+  ov.querySelector('.mclose').onclick=close;
+  ov.querySelector('.mcancel').onclick=close;
+  ov.onclick=e=>{ if(e.target===ov) close(); };
+  ok.onclick=()=>{
+    if(!selected.size) return;
+    const wasEdit=isEdit; p.edm=true; p.edmDomains=[...selected]; persist();
+    toast(`“${p.name}” ${wasEdit?'updated':'published to EDM'} · ${[...selected].join(', ')}`);
+    close(); render();
+  };
+  requestAnimationFrame(()=>ov.classList.add('open'));
+}
+
+/* ---- Filtering / sorting ---- */
+function visible(){
+  let list=productsFor(state.section);
+  if(state.q){const q=state.q.toLowerCase();
+    list=list.filter(p=>(p.name+' '+p.desc+' '+p.owner+' '+p.domains.join(' ')).toLowerCase().includes(q));}
+  if(state.filter!=='all') list=list.filter(p=>productDomains(p).includes(state.filter));
+  if(state.sort==='name') list=[...list].sort((a,b)=>a.name.localeCompare(b.name));
+  if(state.sort==='popular') list=[...list].sort((a,b)=>b.pop-a.pop);
+  return list;
+}
+function allDomains(){
+  const s=new Set(); productsFor(state.section).forEach(p=>productDomains(p).forEach(d=>s.add(d)));
+  return [...s].sort();
+}
+
+/* shared grid filler */
+function fillGrid(wrap){
+  wrap.innerHTML='';
+  const list=visible();
+  if(!list.length){
+    wrap.appendChild(el('div','empty',
+      `<div class="eicon">${icon('search',34,1.5)}</div><h4>No matching data products</h4><p>Try a different search term or filter.</p>`));
+    return;
+  }
+  const grid=el('div','grid');
+  list.forEach(p=>grid.appendChild(card(p)));
+  wrap.appendChild(grid);
+}
+
+/* ---- Bookmarks tab (within The Marketplace) ---- */
+function renderBookmarks(root){
+  const list=productsFor(state.section).filter(p=>p.bm);
+  const head=el('div','page-head');
+  head.innerHTML=`<p class="page-sub" style="margin-top:8px">${list.length} saved data product${list.length===1?'':'s'} in ${SECTIONS[state.section].name}.</p>`;
+  root.appendChild(head);
+  if(!list.length){
+    const e=el('div','empty',
+      `<div class="eicon">${icon('bookmark',34,1.5)}</div><h4>No bookmarked products</h4><p>Products you bookmark will appear here</p>`);
+    const b=el('button','btn-outline','Browse data products');
+    b.onclick=()=>{state.mktTab='browse';render();};
+    e.appendChild(b); root.appendChild(e); return;
+  }
+  const grid=el('div','grid');
+  list.forEach(p=>grid.appendChild(card(p)));
+  root.appendChild(grid);
+}
+
+/* ---- Domain + sensitivity metadata (Home) ---- */
+const DOMAIN_META={
+  Customer:['user','#6D5AE6'], Marketing:['megaphone','#DE8138'], Advertising:['megaphone','#C5601F'],
+  Growth:['trendUp','#0E9488'], Loyalty:['sparkles','#B4468A'], Subscriptions:['bookmark','#2C6FBB'],
+  Streaming:['radio','#7A2E6B'], Content:['layers','#2563EB'], Studios:['barChart','#8A5A00'],
+  Web:['globe','#0073DD'], Mobile:['radio','#0E7A8F'], Product:['box','#2C6FBB'], Engineering:['wrench','#5A6B7B'],
+  Platform:['cpu','#5A6B7B'], ML:['cpu','#8A6D3B'], Analytics:['barChart','#0E9488'],
+  Finance:['dollar','#1E8E5A'], Pricing:['dollar','#1E7E34'], Payments:['dollar','#0E9488'],
+  Risk:['alert','#C0392B'], Fraud:['shield','#C0392B'], Security:['shield','#B4232B'],
+  Compliance:['check','#8A5A00'], Legal:['landmark','#5A6B7B'],
+  Operations:['settings','#8A5A00'], 'Supply Chain':['truck','#2563EB'], Logistics:['truck','#0E7A8F'], Inventory:['box','#8A6D3B'],
+  Retail:['cart','#B4468A'], Merchandising:['cart','#C5601F'], Sales:['trendUp','#1E8E5A'], Partnerships:['users','#2C6FBB'],
+  Ticketing:['tag','#7A2E6B'], Parks:['landmark','#0E9488'], 'Guest Experience':['sparkles','#DE8138'],
+  People:['users','#6D5AE6'], HR:['users','#6D5AE6'], Support:['help','#0E7A8F'],
+};
+const domainMeta=d=>DOMAIN_META[d]||EDM_DOMAIN_META[d]||['tag','#6A7787'];
+function sensOf(p){
+  if(p.domains.some(d=>['Risk','Security','Fraud','Compliance','Payments'].includes(d))) return ['restricted','Restricted'];
+  if(p.domains.some(d=>['Finance','People','HR','Customer','Legal','Loyalty'].includes(d))) return ['internal','Internal'];
+  return ['public','Public'];
+}
+
+/* ---- View: Home (landing — fully customizable) ---- */
+function renderHome(root,isPreview){
+  const sec=SECTIONS[state.section];
+  const mine=productsFor(state.section);
+  const doms=allDomains();
+  const c=czView();                 // merged content + appearance + visibility
+  const show=c.show;
+  const home=el('div','home');
+  const E=escapeHtml;
+
+  /* 1 — HERO: logo + title over background (customizable) */
+  const hero=el('div','hp-hero'+(c.heroAlign==='center'?' center':'')); hero.id='hpHero'; hero.setAttribute('style',bgStyleFor(c));
+  hero.innerHTML=`
+    <div class="hp-logo" id="hpLogo">${logoInner(c)}</div>
+    <div class="hp-hero-inner">
+      <div class="hp-eyebrow">${E(c.eyebrow)}</div>
+      <h1 class="hp-title">${E(c.title)}</h1>
+      <p class="hp-tagline">${E(c.tagline)}</p>
+    </div>`;
+  home.appendChild(hero);
+
+  /* go to the Browse view (optionally with a query/domain filter) */
+  const goBrowse=opts=>{ if(opts&&'q' in opts)state.q=opts.q; if(opts&&'filter' in opts)state.filter=opts.filter; state.view='marketplace'; state.mktTab='browse'; render(); };
+
+  /* 2 — SEARCH BAR (size + text customizable) → routes to Browse */
+  const sz=c.searchSize||'md';
+  const sw=el('div','hp-search-wrap sz-'+sz); sw.id='hpSearchWrap';
+  sw.innerHTML=`<div class="hp-search sz-${sz}"><span class="mg">${icon('search',18)}</span>
+    <input placeholder="${E(c.searchPlaceholder)}"/>
+    <button class="go">${E(c.searchBtn)}</button></div>`;
+  const heroInput=sw.querySelector('input'); heroInput.value=state.q;
+  const goSearch=()=>{ goBrowse({q:heroInput.value.trim()}); };
+  sw.querySelector('.go').onclick=goSearch;
+  heroInput.addEventListener('keydown',e=>{if(e.key==='Enter')goSearch();});
+  home.appendChild(sw);
+
+  /* 3 — WELCOME MESSAGE */
+  if(show.welcome){
+    const w=el('div','welcome');
+    w.innerHTML=`<div class="wemoji">${icon('sparkles',20)}</div>
+      <div><h4>${E(c.welcomeTitle)}</h4><p>${E(c.welcomeBody)}</p></div>
+      <div class="wtools">
+        <button class="hp-icon-btn" id="wHide" title="Hide message">${icon('x',15)}</button>
+      </div>`;
+    w.querySelector('#wHide').onclick=()=>{czSetShow('welcome',false);render();};
+    home.appendChild(w);
+  }
+
+  /* 4 — DOMAINS grid (click opens Browse filtered by that domain) */
+  if(show.domains){
+    const dsec=el('div','hp-sec panel');
+    dsec.innerHTML=`<div class="hp-sec-head"><div><h3>${E(c.domainsTitle)}</h3><p>${E(c.domainsSub)} · ${doms.length} domain${doms.length===1?'':'s'}</p></div></div>`;
+    const dgrid=el('div','domain-grid'); dgrid.id='domGrid';
+    doms.forEach(d=>{
+      const [ic,color]=domainMeta(d);
+      const cnt=mine.filter(p=>productDomains(p).includes(d)).length;
+      const t=el('button','domain-tile');
+      t.innerHTML=`<span class="dic" style="background:${color}">${icon(ic,18)}</span>
+        <span><span class="dn">${d}</span><span class="dc">${cnt} product${cnt!==1?'s':''}</span></span>`;
+      t.onclick=()=>goBrowse({filter:d,q:''});
+      dgrid.appendChild(t);
+    });
+    dsec.appendChild(dgrid);
+    dsec.appendChild(el('div','dom-toggle-wrap'));
+    home.appendChild(dsec);
+  }
+
+  /* 5 — RECENTLY USED DATA PRODUCTS */
+  if(show.recent){
+    const rsec=el('div','hp-sec panel');
+    rsec.innerHTML=`<div class="hp-sec-head"><div><h3>${E(c.recentTitle)}</h3><p>${E(c.recentSub)}</p></div></div>`;
+    const rrow=el('div','recent-row');
+    const recents=[...mine].sort((a,b)=>b.pop-a.pop).slice(1,6);
+    const whens=['2h ago','Yesterday','2 days ago','Last week','Last week'];
+    recents.forEach((p,i)=>{
+      const [scls,slbl]=sensOf(p);
+      const cd=el('div','recent-card');
+      cd.innerHTML=`<div class="rtop"><span class="ric" style="background:${p.ic}">${icon(productIcon(p),18)}</span>
+        <div><h5>${p.name}</h5><div class="rmeta">${(productDomains(p)[0]||p.domains[0])} · ${SRC[p.src].n}</div></div></div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span class="sens ${scls}">${slbl}</span><span class="rwhen">${icon('clock',13)} ${whens[i]||'Recently'}</span></div>`;
+      rrow.appendChild(cd);
+    });
+    if(!recents.length) rrow.innerHTML='<p style="color:var(--muted);font-size:13px;padding:8px 2px">No recent activity yet.</p>';
+    rsec.appendChild(rrow); home.appendChild(rsec);
+  }
+
+  /* 6 — MOST POPULAR (teaser — 3 cards, links to the Browse page) */
+  if(show.popular){
+    const psec=el('div','hp-sec panel');
+    psec.innerHTML=`<div class="hp-sec-head"><div><h3>${E(c.popularTitle)}</h3><p>${E(c.popularSub)}</p></div>
+      <div class="hp-sec-tools"><button class="hp-seeall" id="popAll">See all →</button></div></div>`;
+    const grid=el('div','grid');
+    [...mine].sort((a,b)=>b.pop-a.pop).slice(0,3).forEach(p=>grid.appendChild(card(p)));
+    if(!mine.length) grid.appendChild(el('div','empty',`<div class="eicon">${icon('box',34,1.5)}</div><h4>No data products yet</h4><p></p>`));
+    psec.appendChild(grid); home.appendChild(psec);
+    psec.querySelector('#popAll').onclick=()=>goBrowse({filter:'all',q:''});
+  }
+
+  /* 7 — OTHER CUSTOMIZABLE SECTIONS */
+  if(show.custom){
+    const csec=el('div','hp-sec');
+    csec.innerHTML=`<div class="hp-sec-head"><div><h3>${E(c.customTitle)}</h3><p>${E(c.customSub)}</p></div></div>
+      <div class="custom-block"><div class="cbig">${icon('plus',26,1.8)}</div><h4>${E(c.customCardTitle)}</h4>
+        <p>${E(c.customCardBody)}</p>
+        <button class="addbtn">${E(c.customCardBtn)}</button></div>`;
+    home.appendChild(csec);
+  }
+
+  /* 8 — ACCESS MANAGER APP LINK */
+  if(show.access){
+    const ab=el('div','access-bar');
+    ab.innerHTML=`<div class="aic">${icon('key',20)}</div>
+      <div class="atxt"><b>${E(c.accessTitle)}</b><span>${E(c.accessBody)}</span></div>
+      <button class="abtn">${E(c.accessBtn)}</button>`;
+    home.appendChild(ab);
+  }
+
+  root.appendChild(home);
+
+  /* clip the Domains grid to N rows (default 2), with a Show all / Show less toggle.
+     Deferred to the next frame so the grid has its final laid-out width when measured. */
+  if(show.domains){
+    const doClip=()=>{
+      const dgrid=home.querySelector('#domGrid'), togWrap=home.querySelector('.dom-toggle-wrap');
+      if(!dgrid || !togWrap || !dgrid.isConnected) return;
+      const count=(typeof c.domainCount==='number' && c.domainCount>0)?c.domainCount:null; // explicit number, else 2 rows
+      const tiles=[...dgrid.children];
+      tiles.forEach(t=>t.style.display='');
+      togWrap.innerHTML='';
+      if(!state.domainsExpanded && tiles.length){
+        let showN;
+        if(count!=null){ showN=count; }
+        else { const gap=12,min=148,w=dgrid.clientWidth||900; showN=Math.max(1,Math.floor((w+gap)/(min+gap)))*2; } // default: 2 rows
+        let hidden=0;
+        tiles.forEach((t,i)=>{ if(i>=showN){ t.style.display='none'; hidden++; } });
+        if(hidden>0){
+          const b=el('button','dom-toggle',`Show all ${tiles.length} domains ${icon('chevronDown',15,2)}`);
+          b.onclick=()=>{ const sc=document.getElementById('content').scrollTop; state.domainsExpanded=true; render(); document.getElementById('content').scrollTop=sc; };
+          togWrap.appendChild(b);
+        }
+      } else if(state.domainsExpanded){
+        const b=el('button','dom-toggle',`Show less ${icon('chevronUp',15,2)}`);
+        b.onclick=()=>{ const sc=document.getElementById('content').scrollTop; state.domainsExpanded=false; render(); document.getElementById('content').scrollTop=sc; };
+        togWrap.appendChild(b);
+      }
+    };
+    requestAnimationFrame(doClip);
+  }
+}
+
+/* ---- View: Browse — AI insights hero + product catalog (matches reference) ---- */
+function renderBrowse(root){
+  const c=czView(); const doms=allDomains(); const E=escapeHtml; const sec=SECTIONS[state.section];
+
+  /* AI insights hero */
+  const hero=el('div','ai-hero');
+  hero.innerHTML=`
+    <div class="ai-eyebrow">Get insights from <a href="#" onclick="return false">${E(sec.name)}</a></div>
+    <h2 class="ai-h">How can I help you today?</h2>
+    <div class="ai-box"><input id="bSearch" placeholder="Describe your use case, e.g. Churn rate by customer age"/>
+      <button class="send" id="bAsk" title="Search data products">${icon('arrowUp',18,2.2)}</button></div>
+    <div class="ai-disc">${icon('sparkles',15)} AI generated content. Mistakes may be present.</div>`;
+  root.appendChild(hero);
+
+  /* Browse Data Products */
+  const sh=el('div','section-head');
+  sh.innerHTML=`<h3>${E(c.browseTitle)}</h3><p>${E(c.browseSub)}</p>`;
+  root.appendChild(sh);
+
+  const tools=el('div','browse-tools');
+  tools.innerHTML=`
+    <label class="control">Sort:
+      <select id="bSort"><option value="unsorted">Unsorted</option><option value="popular">Most popular</option><option value="name">Name (A–Z)</option></select></label>
+    <label class="control">Filter:
+      <select id="bFilter"><option value="all">All domains</option>${doms.map(d=>`<option value="${d}">${d}</option>`).join('')}</select></label>
+    <span class="browse-count" id="bCount"></span>`;
+  root.appendChild(tools);
+  const gridWrap=el('div'); root.appendChild(gridWrap);
+
+  const sortSel=tools.querySelector('#bSort'), filSel=tools.querySelector('#bFilter');
+  const srch=hero.querySelector('#bSearch');
+  sortSel.value=state.sort; filSel.value=state.filter; srch.value=state.q;
+  const refill=()=>{ fillGrid(gridWrap); const n=visible().length; tools.querySelector('#bCount').textContent=`${n} data product${n===1?'':'s'}`; };
+  sortSel.onchange=e=>{state.sort=e.target.value;refill();};
+  filSel.onchange=e=>{state.filter=e.target.value;refill();};
+  srch.oninput=e=>{state.q=e.target.value;refill();};
+  hero.querySelector('#bAsk').onclick=()=>{state.q=srch.value;refill();srch.focus();};
+  srch.addEventListener('keydown',e=>{if(e.key==='Enter'){state.q=srch.value;refill();}});
+  refill();
+}
+
+/* ---- View: My Data Products (author & manage your own; not at EDM) ---- */
+function renderMyProducts(root){
+  const sec=SECTIONS[state.section];
+  const head=el('div','page-head mine-head');
+  head.innerHTML=`<div><h1 class="page-title">My Data Products</h1><p class="page-sub">Products you own in ${sec.name}. Publish them to the Enterprise Data Marketplace to share company-wide.</p></div>`;
+  const nb=el('button','btn-primary',`${icon('plus',15,2.2)} New data product`);
+  nb.onclick=openCreateModal;
+  head.appendChild(nb);
+  root.appendChild(head);
+
+  const mine=state.products.filter(p=>p.seg===state.section);
+  if(!mine.length){
+    root.appendChild(el('div','empty',`<div class="eicon">${icon('box',34,1.5)}</div><h4>No data products yet</h4><p>Create your first data product to get started.</p>`));
+    return;
+  }
+  const grid=el('div','grid'); mine.forEach(p=>grid.appendChild(card(p))); root.appendChild(grid);
+}
+
+/* ---- View: Manage Authentication (prototype settings) ---- */
+function renderAuth(root){
+  const sec=SECTIONS[state.section];
+  const head=el('div','page-head');
+  head.innerHTML=`<h1 class="page-title">Manage Authentication</h1><p class="page-sub">Control how users and services connect to ${sec.name}.</p>`;
+  root.appendChild(head);
+  const rows=[
+    ['shield','Single Sign-On (SSO)','SAML / OIDC for workforce access','Enabled'],
+    ['key','API Tokens','Personal & service-account tokens for programmatic access','3 active'],
+    ['database','Source Connections','Credentials for the connected data sources','Managed'],
+    ['users','Access Requests','Approvals for data product access','2 pending'],
+  ];
+  const list=el('div','cur-list');
+  rows.forEach(([ic,t,d,badge])=>{
+    const r=el('div','cur-row');
+    r.innerHTML=`<div class="cur-ic" style="background:#0E1F33">${icon(ic,20)}</div>
+      <div class="cur-main"><h4>${t}</h4><div class="cm">${d}</div></div>
+      <span class="cur-status in" style="color:var(--blue);background:var(--edm-bg)">${badge}</span>
+      <div class="cur-acts"><button class="link-btn">Configure</button></div>`;
+    list.appendChild(r);
+  });
+  root.appendChild(list);
+  root.appendChild(el('div','wf-note',`<span style="display:inline-flex;vertical-align:-.2em">${icon('key',15)}</span><span><b>Prototype.</b> Authentication settings are placeholders for the design review.</span>`));
+}
+
+/* ---- Create data product dialog (segments only) ---- */
+function openCreateModal(){
+  if(state.section==='edm') return;
+  const seg=SECTIONS[state.section];
+  const doms=[...new Set(state.products.filter(p=>p.seg===state.section).flatMap(p=>p.domains))].sort();
+  const chosen=new Set();
+  const ov=el('div','modal-overlay');
+  ov.innerHTML=`<div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <div><div class="modal-kicker">${seg.short} · New data product</div><h3>Create a data product</h3></div>
+      <button class="hp-icon-btn mclose" title="Close">${icon('x',15)}</button>
+    </div>
+    <div class="modal-body">
+      <div class="cz-field"><label>Name</label><input id="npName" placeholder="e.g. Guest Loyalty 360"/></div>
+      <div class="cz-field"><label>Owner</label><input id="npOwner" value="Chetan Tewari"/></div>
+      <div class="cz-field"><label>Source</label><select id="npSrc">${Object.keys(SRC).map(s=>`<option value="${s}">${SRC[s].n}</option>`).join('')}</select></div>
+      <div class="cz-field"><label>Short description</label><textarea id="npDesc" rows="2" placeholder="What does this data product provide?"></textarea></div>
+      <div class="mfield"><span class="mlbl">Domains</span><div class="dpick" id="npDoms"></div></div>
+    </div>
+    <div class="modal-foot">
+      <button class="mcancel">Cancel</button>
+      <button class="mok">${icon('plus',15,2.2)} Create</button>
+    </div></div>`;
+  document.body.appendChild(ov);
+  const pick=ov.querySelector('#npDoms');
+  const renderDoms=()=>{ pick.innerHTML='';
+    (doms.length?doms:['Product']).forEach(d=>{
+      const [ic,color]=domainMeta(d); const on=chosen.has(d);
+      const b=el('button','dpick-item'+(on?' on':''));
+      b.innerHTML=`<span class="di" style="background:${color}">${icon(ic,17)}</span><span class="dl">${d}</span><span class="dck">${on?icon('check',15,2.4):''}</span>`;
+      b.onclick=()=>{ on?chosen.delete(d):chosen.add(d); renderDoms(); };
+      pick.appendChild(b);
+    });
+  };
+  renderDoms();
+  const close=()=>{ ov.remove(); document.removeEventListener('keydown',esc); };
+  const esc=e=>{ if(e.key==='Escape') close(); };
+  document.addEventListener('keydown',esc);
+  ov.querySelector('.mclose').onclick=close;
+  ov.querySelector('.mcancel').onclick=close;
+  ov.onclick=e=>{ if(e.target===ov) close(); };
+  ov.querySelector('.mok').onclick=()=>{
+    const name=ov.querySelector('#npName').value.trim();
+    if(!name){ ov.querySelector('#npName').focus(); return; }
+    const colors=['#2563EB','#6D5AE6','#0E9488','#DE8138','#B4468A','#2C6FBB','#C0392B'];
+    const p={ id:'new'+Date.now(), seg:state.section, edm:false, name,
+      owner:ov.querySelector('#npOwner').value.trim()||'You', src:ov.querySelector('#npSrc').value,
+      ic:colors[state.products.length%colors.length], desc:ov.querySelector('#npDesc').value.trim()||'Newly created data product.',
+      fields:12, tables:2, lin:3, pop:1, domains:[...chosen].length?[...chosen]:[doms[0]||'Product'], created:true, edmDomains:[] };
+    state.products.push(p); persist(); persistNew();
+    toast(`Created “${name}” in ${seg.short}`); close(); state.view='myproducts'; render();
+  };
+  requestAnimationFrame(()=>ov.classList.add('open'));
+}
+
+/* ---- View: Manage (customization + data-product curation) ---- */
+function renderManage(root){
+  const sec=SECTIONS[state.section];
+  const tab=state.manageTab||'design';
+  const head=el('div','mgr-head');
+  head.innerHTML=`<h1 class="page-title">Manage</h1><p class="page-sub">${sec.name}</p>`;
+  const tabs=el('div','mgr-tabs');
+  [['design','sliders','Home page design'],['products','database','Data products']].forEach(([k,ic,l])=>{
+    const b=el('button','mgr-tab'+(tab===k?' active':''),`${icon(ic,15)} ${l}`);
+    b.onclick=()=>{state.manageTab=k;render();};
+    tabs.appendChild(b);
+  });
+  head.appendChild(tabs);
+  root.appendChild(head);
+
+  if(tab==='products') return renderCuration(root);
+
+  const split=el('div','mgr-split');
+  const controls=el('div','mgr-controls'); controls.id='mgrControls';
+  const pv=el('div','mgr-preview');
+  pv.innerHTML=`<div class="mgr-pv-label">Live preview · Home page</div>
+    <div class="mgr-pv-frame"><div class="mgr-pv-inner" id="mgrPv"></div></div>`;
+  split.appendChild(controls); split.appendChild(pv);
+  root.appendChild(split);
+  buildControls(controls);
+  czPreview();
+}
+
+/* Manage → Data products: curation + push-to-EDM management */
+function renderCuration(root){
+  const isEDM=state.section==='edm';
+  const list=productsFor(state.section);
+  const note=el('div','cur-note');
+  note.innerHTML=isEDM
+    ? `<span>${icon('landmark',16)}</span><span>These products were published from a segment and pushed up to the EDM. Edit their enterprise domains or remove them from the EDM.</span>`
+    : `<span>${icon('arrowUp',16,2)}</span><span>Publish products from this segment up to the Enterprise Data Marketplace, and choose which enterprise domain(s) they appear under.</span>`;
+  root.appendChild(note);
+
+  const wrap=el('div','cur-list');
+  list.forEach(p=>{
+    const row=el('div','cur-row');
+    const inEdm=p.edm;
+    const domChips=(isEDM?(p.edmDomains||[]):(p.edmDomains||[])).map(d=>`<span class="pill edm-pill">${d}</span>`).join('');
+    row.innerHTML=`
+      <div class="cur-ic" style="background:${p.ic}">${icon(productIcon(p),20)}</div>
+      <div class="cur-main"><h4>${p.name}</h4><div class="cm">${p.owner} · ${SRC[p.src].n}${isEDM?` · From ${SECTIONS[p.seg].short}`:''}</div></div>
+      <div class="cur-doms">${p.domains.map(d=>`<span class="pill">${d}</span>`).join('')}</div>
+      <span class="cur-status ${inEdm?'in':'out'}">${inEdm?icon('check',13,2.2)+' In EDM':'Not in EDM'}</span>
+      <div class="cur-doms">${domChips}</div>
+      <div class="cur-acts"></div>`;
+    const acts=row.querySelector('.cur-acts');
+    if(inEdm){
+      const edit=el('button','link-btn','Edit domains'); edit.onclick=()=>openPushModal(p);
+      const rm=el('button','link-btn','Remove'); rm.onclick=()=>{p.edm=false;persist();toast(`Removed “${p.name}” from the EDM`);render();};
+      acts.appendChild(edit); if(!isEDM) acts.appendChild(rm); else acts.appendChild(rm);
+    }else{
+      const push=el('button','push-btn','▲ Push to EDM'); push.onclick=()=>openPushModal(p);
+      acts.appendChild(push);
+    }
+    wrap.appendChild(row);
+  });
+  root.appendChild(wrap);
+}
+
+/* ---- Master render ---- */
+function render(){
+  document.querySelector('.app').classList.toggle('nav-open', !!state.navOpen);
+  renderRail(); renderNavPanel();
+  // My Data Products isn't available at the top-level EDM
+  if(state.view==='myproducts' && state.section==='edm') state.view='marketplace';
+  const root=document.getElementById('content'); root.innerHTML='';
+  if(state.view==='auth') renderAuth(root);
+  else if(state.view==='myproducts') renderMyProducts(root);
+  else if(state.view==='manage') renderManage(root);
+  else renderMarketplacePage(root);
+}
+
+/* ---- The Marketplace page: Home / Browse / Bookmarks content tabs ---- */
+function renderMarketplacePage(root){
+  const tab=state.mktTab||'home';
+  const strip=el('div','mkt-tabs');
+  [['home','Home'],['browse','Browse'],['bookmarks','Bookmarks']].forEach(([k,l])=>{
+    const t=el('button','mkt-tab'+(tab===k?' active':''),l);
+    t.onclick=()=>{ state.mktTab=k; render(); };
+    strip.appendChild(t);
+  });
+  root.appendChild(strip);
+  if(tab==='browse') renderBrowse(root);
+  else if(tab==='bookmarks') renderBookmarks(root);
+  else renderHome(root);
+}
+
+/* ---- File-upload wiring (used by Manage → Home page design) ---- */
+document.getElementById('czLogoFile').onchange=e=>{const f=e.target.files[0];if(!f)return;fileToDataURL(f,600,240,url=>{czSet('logoImg',url);czRefresh();toast('Logo updated');});e.target.value='';};
+document.getElementById('czBgFile').onchange=e=>{const f=e.target.files[0];if(!f)return;fileToDataURL(f,1600,900,url=>{czSet('bgImg',url);czSet('bg','custom');czRefresh();toast('Background updated');});e.target.value='';};
+
+document.getElementById('tbSearch').innerHTML=icon('search',16);
+document.getElementById('tbHelp').innerHTML=icon('help',16);
+
+render();
+</script>
+</body>
+</html>
