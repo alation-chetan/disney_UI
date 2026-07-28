@@ -1261,6 +1261,37 @@ function renderHome(root,isPreview){
     home.appendChild(dsec);
   }
 
+  /* 4b — DATA PRODUCT LIST (EDM only, below Domains) — filter by domain, filter by data product, sort */
+  if(state.section==='edm'){
+    const dlsec=el('div','hp-sec panel');
+    dlsec.innerHTML=`<div class="hp-sec-head"><div><h3>Data Product List</h3><p>Search and filter every data product rolled up into the Enterprise Data Marketplace.</p></div></div>`;
+    const tools=el('div','browse-tools');
+    tools.innerHTML=`
+      <label class="control">Sort:
+        <select id="dlSort"><option value="unsorted">Unsorted</option><option value="popular">Most popular</option><option value="name">Name (A–Z)</option></select></label>
+      <label class="control">Filter by domain:
+        <select id="dlDom"><option value="all">All domains</option>${doms.map(d=>`<option value="${d}">${d}</option>`).join('')}</select></label>
+      <div class="search-inline"><span class="mag">${icon('search',15)}</span><input id="dlSearch" placeholder="Filter by data product"/></div>`;
+    dlsec.appendChild(tools);
+    const gw=el('div'); dlsec.appendChild(gw);
+    home.appendChild(dlsec);
+    let lsort='unsorted', ldom='all', lq='';
+    const fill=()=>{
+      let list=mine.slice();
+      if(lq){ const q=lq.toLowerCase(); list=list.filter(p=>(p.name+' '+p.desc+' '+p.owner+' '+(p.edmDomains||[]).join(' ')+' '+p.domains.join(' ')).toLowerCase().includes(q)); }
+      if(ldom!=='all') list=list.filter(p=>(p.edmDomains||[]).includes(ldom));
+      if(lsort==='name') list.sort((a,b)=>a.name.localeCompare(b.name));
+      else if(lsort==='popular') list.sort((a,b)=>b.pop-a.pop);
+      gw.innerHTML='';
+      if(!list.length){ gw.appendChild(el('div','empty',`<div class="eicon">${icon('search',34,1.5)}</div><h4>No matching data products</h4><p>Try a different domain or search term.</p>`)); return; }
+      const g=el('div','grid'); list.forEach(p=>g.appendChild(card(p))); gw.appendChild(g);
+    };
+    tools.querySelector('#dlSort').onchange=e=>{lsort=e.target.value;fill();};
+    tools.querySelector('#dlDom').onchange=e=>{ldom=e.target.value;fill();};
+    tools.querySelector('#dlSearch').oninput=e=>{lq=e.target.value;fill();};
+    fill();
+  }
+
   /* 5 & 6 — RECENTLY USED + MOST POPULAR, shown side by side ------------- */
   let rsec=null, psec=null;
   if(show.recent){
@@ -1303,37 +1334,6 @@ function renderHome(root,isPreview){
   if(rsec && psec){ const two=el('div','hp-two'); two.appendChild(rsec); two.appendChild(psec); home.appendChild(two); }
   else { if(rsec) home.appendChild(rsec); if(psec) home.appendChild(psec); }
   if(psec) psec.querySelector('#popAll').onclick=()=>goBrowse({filter:'all',q:''});
-
-  /* 6b — DATA PRODUCT LIST (EDM only) — filter by domain, filter by data product, sort */
-  if(state.section==='edm'){
-    const dsec=el('div','hp-sec panel');
-    dsec.innerHTML=`<div class="hp-sec-head"><div><h3>Data Product List</h3><p>Search and filter every data product rolled up into the Enterprise Data Marketplace.</p></div></div>`;
-    const tools=el('div','browse-tools');
-    tools.innerHTML=`
-      <label class="control">Sort:
-        <select id="dlSort"><option value="unsorted">Unsorted</option><option value="popular">Most popular</option><option value="name">Name (A–Z)</option></select></label>
-      <label class="control">Filter by domain:
-        <select id="dlDom"><option value="all">All domains</option>${doms.map(d=>`<option value="${d}">${d}</option>`).join('')}</select></label>
-      <div class="search-inline"><span class="mag">${icon('search',15)}</span><input id="dlSearch" placeholder="Filter by data product"/></div>`;
-    dsec.appendChild(tools);
-    const gw=el('div'); dsec.appendChild(gw);
-    home.appendChild(dsec);
-    let lsort='unsorted', ldom='all', lq='';
-    const fill=()=>{
-      let list=mine.slice();
-      if(lq){ const q=lq.toLowerCase(); list=list.filter(p=>(p.name+' '+p.desc+' '+p.owner+' '+(p.edmDomains||[]).join(' ')+' '+p.domains.join(' ')).toLowerCase().includes(q)); }
-      if(ldom!=='all') list=list.filter(p=>(p.edmDomains||[]).includes(ldom));
-      if(lsort==='name') list.sort((a,b)=>a.name.localeCompare(b.name));
-      else if(lsort==='popular') list.sort((a,b)=>b.pop-a.pop);
-      gw.innerHTML='';
-      if(!list.length){ gw.appendChild(el('div','empty',`<div class="eicon">${icon('search',34,1.5)}</div><h4>No matching data products</h4><p>Try a different domain or search term.</p>`)); return; }
-      const g=el('div','grid'); list.forEach(p=>g.appendChild(card(p))); gw.appendChild(g);
-    };
-    tools.querySelector('#dlSort').onchange=e=>{lsort=e.target.value;fill();};
-    tools.querySelector('#dlDom').onchange=e=>{ldom=e.target.value;fill();};
-    tools.querySelector('#dlSearch').oninput=e=>{lq=e.target.value;fill();};
-    fill();
-  }
 
   /* 7 — OTHER CUSTOMIZABLE SECTIONS */
   if(show.custom){
