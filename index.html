@@ -183,7 +183,9 @@ button{font-family:inherit;cursor:pointer}
 .origin{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:20px;margin-bottom:12px}
 .p-footer{margin-top:14px;padding-top:12px;border-top:1px solid var(--line-soft);display:flex;flex-direction:column;align-items:stretch;gap:9px}
 .pushed-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-.push-acts{display:flex;gap:16px;justify-content:flex-end}
+.push-acts{display:flex;gap:14px;justify-content:flex-end;flex-wrap:wrap}
+.dom-newinput{flex:1;border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-size:13.5px;color:var(--ink);outline:0;font-family:inherit}
+.dom-newinput:focus{border-color:var(--blue)}
 .push-btn{border:1px solid var(--orange);color:var(--orange);background:#fff;font-weight:600;font-size:12.5px;padding:8px 12px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;gap:6px}
 .push-btn:hover{background:var(--edm-bg)}
 .pushed-tag{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--green);background:var(--green-bg);padding:5px 11px;border-radius:8px}
@@ -462,7 +464,7 @@ button{font-family:inherit;cursor:pointer}
   <header class="topbar">
     <div class="brand">
       <span class="glyph">◆</span>
-      <span class="crumb"><b>Data Products</b><span class="sep">/</span><span id="crumbName">Enterprise Data Marketplace</span></span>
+      <span class="crumb"><b>Data Products</b><span class="sep">/</span><span id="crumbName">CofC</span></span>
     </div>
     <div class="topbar-right">
       <button class="icon-btn" id="tbSearch" title="Search"></button>
@@ -477,12 +479,12 @@ button{font-family:inherit;cursor:pointer}
   <!-- Nav panel: per-section Data Products App menu -->
   <aside class="navpanel">
     <div class="np-head">
-      <div class="np-name" id="npName">Enterprise Data Marketplace</div>
+      <div class="np-name" id="npName">CofC</div>
       <span class="np-scope" id="npScope"></span>
     </div>
     <div class="np-label">Data Products App</div>
     <nav id="navMenu"></nav>
-    <div class="rollup-note">Data products published in a segment can be <b style="color:#cfe0ee">pushed up</b> to the Enterprise Data Marketplace for company-wide discovery.</div>
+    <div class="rollup-note">Data products published in a segment can be <b style="color:#cfe0ee">pushed up</b> to CofC for company-wide discovery.</div>
   </aside>
 
   <!-- Main -->
@@ -503,12 +505,12 @@ button{font-family:inherit;cursor:pointer}
 
 /* ---- Sections ---- */
 const SECTIONS = {
-  edm:{id:'edm',    name:'Enterprise Data Marketplace', short:'EDM', color:'var(--edm)', bg:'var(--edm-bg)',
+  edm:{id:'edm',    name:'CofC', short:'CofC', color:'var(--edm)', bg:'var(--edm-bg)',
        sub:'Company-wide discovery. Data products rolled up from every segment marketplace.'},
-  A:  {id:'A',      name:'Segment Marketplace A', short:'Segment A', color:'var(--segA)', bg:'var(--segA-bg)',
-       sub:'Scoped marketplace for Segment A. Publish here, then push products up to the EDM.'},
-  B:  {id:'B',      name:'Segment Marketplace B', short:'Segment B', color:'var(--segB)', bg:'var(--segB-bg)',
-       sub:'Scoped marketplace for Segment B. Publish here, then push products up to the EDM.'},
+  A:  {id:'A',      name:'HRBI', short:'HRBI', color:'var(--segA)', bg:'var(--segA-bg)',
+       sub:'Scoped marketplace for HRBI. Publish here, then push products up to CofC.'},
+  B:  {id:'B',      name:'Corp Multidomain', short:'Corp Multidomain', color:'var(--segB)', bg:'var(--segB-bg)',
+       sub:'Scoped marketplace for Corp Multidomain. Publish here, then push products up to CofC.'},
 };
 
 /* ---- Sources ---- */
@@ -641,18 +643,23 @@ const LS_NEW='edm_proto_new_v1';
 function loadState(){
   let saved={}; try{saved=JSON.parse(localStorage.getItem(LS))||{}}catch(e){}
   let created=[]; try{created=JSON.parse(localStorage.getItem(LS_NEW))||[]}catch(e){}
-  const products=[...SEED,...created].map(p=>({
-    ...p,
-    edm: saved.edm && (p.id in saved.edm) ? saved.edm[p.id] : !!p.edm,
-    bm:  saved.bm  ? !!saved.bm[p.id] : false,
-    edmDomains: (saved.edmDomains && saved.edmDomains[p.id]) ? saved.edmDomains[p.id] : (p.edm ? suggestEdmDomains(p) : []),
-  }));
+  const products=[...SEED,...created].map(p0=>{
+    const p={...p0};
+    // segment-domain overrides (attaching products to multiple domains)
+    if(saved.pdoms && saved.pdoms[p.id]){ p.domains=saved.pdoms[p.id]; p.domEdited=true; }
+    return {
+      ...p,
+      edm: saved.edm && (p.id in saved.edm) ? saved.edm[p.id] : !!p.edm,
+      bm:  saved.bm  ? !!saved.bm[p.id] : false,
+      edmDomains: (saved.edmDomains && saved.edmDomains[p.id]) ? saved.edmDomains[p.id] : (p.edm ? suggestEdmDomains(p) : []),
+    };
+  });
   return {products, section:'edm', view:'marketplace', mktTab:'home', manageTab:'design', navOpen:false, domainsExpanded:false, detailId:null, sort:'unsorted', filter:'all', q:''};
 }
 function persist(){
-  const edm={},bm={},ed={};
-  state.products.forEach(p=>{edm[p.id]=p.edm; if(p.bm)bm[p.id]=true; if(p.edmDomains&&p.edmDomains.length)ed[p.id]=p.edmDomains;});
-  localStorage.setItem(LS,JSON.stringify({edm,bm,edmDomains:ed}));
+  const edm={},bm={},ed={},pd={};
+  state.products.forEach(p=>{edm[p.id]=p.edm; if(p.bm)bm[p.id]=true; if(p.edmDomains&&p.edmDomains.length)ed[p.id]=p.edmDomains; if(p.domEdited)pd[p.id]=p.domains;});
+  localStorage.setItem(LS,JSON.stringify({edm,bm,edmDomains:ed,pdoms:pd}));
 }
 function persistNew(){
   const created=state.products.filter(p=>p.created).map(p=>({id:p.id,seg:p.seg,edm:false,name:p.name,owner:p.owner,src:p.src,ic:p.ic,desc:p.desc,fields:p.fields,tables:p.tables,lin:p.lin,pop:p.pop,domains:p.domains,created:true}));
@@ -703,14 +710,14 @@ function czDefaults(secId){
     searchPlaceholder:'Search data products, domains, owners…',
     searchBtn:'Search',
     /* welcome */
-    welcomeTitle: isEDM?"Welcome to Disney's Enterprise Data Marketplace":'Welcome to '+sec.name,
+    welcomeTitle: 'Welcome to '+sec.name,
     welcomeBody: isEDM
       ? "Your front door to Disney's trusted data. Browse by domain, search across every segment, and request access — all in one governed catalog."
       : `Everything published in ${sec.short} lives here. Publish products for your teams and promote the best ones to the enterprise marketplace.`,
     /* section headings */
     domainsTitle:'Domains', domainsSub:'Browse data products by business domain.', domainCount:null,
     popularTitle:'Most Popular Data Products', popularSub:`Top products in ${sec.name} by usage.`,
-    browseTitle:'Browse Data Products', browseSub: isEDM?'Every product below was published in a segment and pushed up to the EDM for company-wide discovery.':'All data products in this segment marketplace.',
+    browseTitle:'Browse Data Products', browseSub: isEDM?`Every product below was published in a segment and pushed up to ${sec.short} for company-wide discovery.`:'All data products in this segment marketplace.',
     recentTitle:'Recently Used Data Products', recentSub:'Based on your recent activity.',
     customTitle:'Other Customizable Sections', customSub:'Admins can add curated rows here.',
     customCardTitle:'Add a custom section', customCardBody:'Feature a collection, a team’s products, “New this week”, or an embedded dashboard.',
@@ -1014,9 +1021,9 @@ function renderRail(){
   store.onclick=()=>{ state.navOpen=!state.navOpen; render(); };
   rail.appendChild(store);
   rail.appendChild(el('div','rail-div'));
-  const meta={edm:['landmark','EDM'],A:['box','Segment A'],B:['box','Segment B']};
+  const gmap={edm:'landmark',A:'box',B:'box'};
   [SECTIONS.edm,SECTIONS.A,SECTIONS.B].forEach(sec=>{
-    const [g,label]=meta[sec.id];
+    const g=gmap[sec.id], label=sec.short;
     const b=el('button','rail-item'+(state.section===sec.id?' active':''));
     b.title=sec.name;
     b.innerHTML=`<span class="rtile">${icon(g,19,1.7)}</span><span class="rlabel">${label}</span>`;
@@ -1105,19 +1112,21 @@ function card(p){
     toast(p.bm?`Bookmarked “${p.name}”`:`Removed “${p.name}” from bookmarks`);
     render();
   };
-  // segment footer: push-to-EDM flow (with enterprise-domain mapping)
+  // segment footer: attach-to-domains + push-to-EDM flow
   if(!isEDM){
     const f=el('div','p-footer');
+    const dEdit=el('button','link-btn','Edit domains'); dEdit.onclick=(e)=>{e.stopPropagation();openDomainsModal(p);};
     if(p.edm){
       const chips=(p.edmDomains||[]).map(d=>`<span class="pill edm-pill">${d}</span>`).join('');
-      f.innerHTML=`<div class="pushed-row"><span class="pushed-tag">${icon('check',13,2.2)} In EDM</span>${chips}</div>`;
+      f.innerHTML=`<div class="pushed-row"><span class="pushed-tag">${icon('check',13,2.2)} In ${SECTIONS.edm.short}</span>${chips}</div>`;
       const acts=el('div','push-acts');
-      const edit=el('button','link-btn','Edit domains'); edit.onclick=(e)=>{e.stopPropagation();openPushModal(p);};
-      const undo=el('button','link-btn','Remove'); undo.onclick=(e)=>{e.stopPropagation();p.edm=false;persist();toast(`Removed “${p.name}” from the EDM`);render();};
-      acts.appendChild(edit); acts.appendChild(undo); f.appendChild(acts);
+      const eEdit=el('button','link-btn',`Edit ${SECTIONS.edm.short} domains`); eEdit.onclick=(e)=>{e.stopPropagation();openPushModal(p);};
+      const undo=el('button','link-btn','Remove'); undo.onclick=(e)=>{e.stopPropagation();p.edm=false;persist();toast(`Removed “${p.name}” from ${SECTIONS.edm.short}`);render();};
+      acts.appendChild(dEdit); acts.appendChild(eEdit); acts.appendChild(undo); f.appendChild(acts);
     }else{
-      const btn=el('button','push-btn',`${icon('arrowUp',15,2)} Push to EDM`); btn.onclick=(e)=>{e.stopPropagation();openPushModal(p);};
+      const btn=el('button','push-btn',`${icon('arrowUp',15,2)} Push to ${SECTIONS.edm.short}`); btn.onclick=(e)=>{e.stopPropagation();openPushModal(p);};
       f.appendChild(btn);
+      const acts=el('div','push-acts'); acts.appendChild(dEdit); f.appendChild(acts);
     }
     c.appendChild(f);
   }
@@ -1215,7 +1224,7 @@ function renderDetail(root,p){
     </div>
 
     <div class="dp-side">
-      <div class="dp-card"><div class="lbl">Domains</div><div class="dp-chips">${productDomains(p).map(d=>`<span class="pill">${d}</span>`).join('')||'<span class="pill">—</span>'}</div></div>
+      <div class="dp-card"><div class="lbl" style="display:flex;align-items:center;justify-content:space-between">Domains${state.section!=='edm'?`<button class="link-btn" id="dpEditDoms">Edit</button>`:''}</div><div class="dp-chips">${productDomains(p).map(d=>`<span class="pill">${d}</span>`).join('')||'<span class="pill">—</span>'}</div></div>
       <div class="dp-card"><div class="lbl">Consumption Patterns</div><div class="dp-chips">${patterns.map(x=>`<span class="pill">${x}</span>`).join('')}</div></div>
       <div class="dp-card"><div class="lbl">Data Classification</div><div class="dp-chips"><span class="sens ${clsChip}">${cls}</span></div></div>
       <div class="dp-card"><div class="lbl">Contacts</div>
@@ -1227,6 +1236,7 @@ function renderDetail(root,p){
 
   // tab quick-scroll
   dp.querySelectorAll('.dp-tab').forEach(t=>t.onclick=()=>{ const s=document.getElementById(t.dataset.go); if(s) s.scrollIntoView({behavior:'smooth',block:'start'}); });
+  const de=dp.querySelector('#dpEditDoms'); if(de) de.onclick=()=>openDomainsModal(p);
   // request access
   const req=dp.querySelector('#dpReq');
   req.onchange=()=>{ if(req.value){ toast(`Access requested · ${req.value}`); req.value=''; } };
@@ -1255,12 +1265,12 @@ function openPushModal(p){
   const ov=el('div','modal-overlay');
   ov.innerHTML=`<div class="modal" role="dialog" aria-modal="true">
     <div class="modal-head">
-      <div><div class="modal-kicker">${isEdit?'Edit enterprise domains':'Publish to the Enterprise Data Marketplace'}</div>
+      <div><div class="modal-kicker">${isEdit?'Edit enterprise domains':'Publish to '+SECTIONS.edm.name}</div>
         <h3>${escapeHtml(p.name)}</h3></div>
       <button class="hp-icon-btn mclose" title="Close">${icon('x',15)}</button>
     </div>
     <div class="modal-body">
-      <div class="mnote"><span style="display:inline-flex;vertical-align:-.2em;margin-right:5px">${icon('landmark',15)}</span>Enterprise domains are curated separately from <b>${seg.short}</b> domains. Choose where this product should appear in the top-level EDM.</div>
+      <div class="mnote"><span style="display:inline-flex;vertical-align:-.2em;margin-right:5px">${icon('landmark',15)}</span>Enterprise domains are curated separately from <b>${seg.short}</b> domains. Choose where this product should appear in the top-level ${SECTIONS.edm.short}.</div>
       <div class="mfield"><span class="mlbl">Its ${seg.short} domains</span>
         <div class="mchips">${p.domains.map(d=>`<span class="pill">${d}</span>`).join('')}</div></div>
       <div class="mfield"><span class="mlbl">Publish into enterprise domain(s)</span>
@@ -1293,9 +1303,54 @@ function openPushModal(p){
   ok.onclick=()=>{
     if(!selected.size) return;
     const wasEdit=isEdit; p.edm=true; p.edmDomains=[...selected]; persist();
-    toast(`“${p.name}” ${wasEdit?'updated':'published to EDM'} · ${[...selected].join(', ')}`);
+    toast(`“${p.name}” ${wasEdit?'updated':'published to '+SECTIONS.edm.short} · ${[...selected].join(', ')}`);
     close(); render();
   };
+  requestAnimationFrame(()=>ov.classList.add('open'));
+}
+
+/* ---- Attach a data product to multiple SEGMENT domains ---- */
+function openDomainsModal(p){
+  const seg=SECTIONS[p.seg];
+  let doms=[...new Set(state.products.filter(x=>x.seg===p.seg).flatMap(x=>x.domains))].sort();
+  const selected=new Set(p.domains);
+  const ov=el('div','modal-overlay');
+  ov.innerHTML=`<div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <div><div class="modal-kicker">${seg.short} · Domains</div><h3>${escapeHtml(p.name)}</h3></div>
+      <button class="hp-icon-btn mclose" title="Close">${icon('x',15)}</button>
+    </div>
+    <div class="modal-body">
+      <div class="mnote"><span style="display:inline-flex;vertical-align:-.2em;margin-right:5px">${icon('tag',15)}</span>Attach this data product to one or more <b>${seg.short}</b> domains — a product can belong to several domains at once.</div>
+      <div class="mfield"><span class="mlbl">${seg.short} domains</span><div class="dpick" id="dpick"></div></div>
+      <div class="mfield"><span class="mlbl">Add a new domain</span>
+        <div class="cz-row"><input id="newDom" class="dom-newinput" placeholder="e.g. Payments"/><button class="cz-upload" id="addDom">Add</button></div></div>
+    </div>
+    <div class="modal-foot"><button class="mcancel">Cancel</button><button class="mok">Save</button></div></div>`;
+  document.body.appendChild(ov);
+  const pick=ov.querySelector('#dpick'), ok=ov.querySelector('.mok');
+  const renderPick=()=>{
+    pick.innerHTML='';
+    doms.forEach(d=>{
+      const [ic,color]=domainMeta(d); const on=selected.has(d);
+      const b=el('button','dpick-item'+(on?' on':''));
+      b.innerHTML=`<span class="di" style="background:${color}">${icon(ic,17)}</span><span class="dl">${d}</span><span class="dck">${on?icon('check',15,2.4):''}</span>`;
+      b.onclick=()=>{ on?selected.delete(d):selected.add(d); renderPick(); ok.disabled=!selected.size; };
+      pick.appendChild(b);
+    });
+    ok.disabled=!selected.size;
+  };
+  renderPick();
+  const addDom=()=>{ const inp=ov.querySelector('#newDom'); const v=inp.value.trim(); if(!v)return; if(!doms.includes(v))doms.push(v); doms.sort(); selected.add(v); inp.value=''; renderPick(); };
+  ov.querySelector('#addDom').onclick=addDom;
+  ov.querySelector('#newDom').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); addDom(); } });
+  const close=()=>{ ov.remove(); document.removeEventListener('keydown',esc); };
+  const esc=e=>{ if(e.key==='Escape') close(); };
+  document.addEventListener('keydown',esc);
+  ov.querySelector('.mclose').onclick=close;
+  ov.querySelector('.mcancel').onclick=close;
+  ov.onclick=e=>{ if(e.target===ov) close(); };
+  ok.onclick=()=>{ if(!selected.size) return; p.domains=[...selected]; p.domEdited=true; persist(); if(p.created)persistNew(); toast(`Updated ${seg.short} domains for “${p.name}”`); close(); render(); };
   requestAnimationFrame(()=>ov.classList.add('open'));
 }
 
@@ -1438,7 +1493,7 @@ function renderHome(root,isPreview){
   /* 4b — DATA PRODUCT LIST (EDM only, below Domains) — filter by domain, filter by data product, sort */
   if(state.section==='edm'){
     const dlsec=el('div','hp-sec panel');
-    dlsec.innerHTML=`<div class="hp-sec-head"><div><h3>Data Product List</h3><p>Search and filter every data product rolled up into the Enterprise Data Marketplace.</p></div></div>`;
+    dlsec.innerHTML=`<div class="hp-sec-head"><div><h3>Data Product List</h3><p>Search and filter every data product rolled up into ${SECTIONS.edm.name}.</p></div></div>`;
     const tools=el('div','browse-tools');
     tools.innerHTML=`
       <label class="control">Sort:
@@ -1626,7 +1681,7 @@ function renderBrowse(root){
 function renderMyProducts(root){
   const sec=SECTIONS[state.section];
   const head=el('div','page-head mine-head');
-  head.innerHTML=`<div><h1 class="page-title">My Data Products</h1><p class="page-sub">Products you own in ${sec.name}. Publish them to the Enterprise Data Marketplace to share company-wide.</p></div>`;
+  head.innerHTML=`<div><h1 class="page-title">My Data Products</h1><p class="page-sub">Products you own in ${sec.name}. Publish them to ${SECTIONS.edm.name} to share company-wide.</p></div>`;
   const nb=el('button','btn-primary',`${icon('plus',15,2.2)} New data product`);
   nb.onclick=openCreateModal;
   head.appendChild(nb);
@@ -1754,8 +1809,8 @@ function renderCuration(root){
   const list=productsFor(state.section);
   const note=el('div','cur-note');
   note.innerHTML=isEDM
-    ? `<span>${icon('landmark',16)}</span><span>These products were published from a segment and pushed up to the EDM. Edit their enterprise domains or remove them from the EDM.</span>`
-    : `<span>${icon('arrowUp',16,2)}</span><span>Publish products from this segment up to the Enterprise Data Marketplace, and choose which enterprise domain(s) they appear under.</span>`;
+    ? `<span>${icon('landmark',16)}</span><span>These products were published from a segment and pushed up to ${SECTIONS.edm.short}. Edit their enterprise domains or remove them from ${SECTIONS.edm.short}.</span>`
+    : `<span>${icon('arrowUp',16,2)}</span><span>Publish products from this segment up to ${SECTIONS.edm.name}, and choose which enterprise domain(s) they appear under.</span>`;
   root.appendChild(note);
 
   const wrap=el('div','cur-list');
@@ -1767,16 +1822,16 @@ function renderCuration(root){
       <div class="cur-ic" style="background:${p.ic}">${icon(productIcon(p),20)}</div>
       <div class="cur-main"><h4>${p.name}</h4><div class="cm">${p.owner} · ${SRC[p.src].n}${isEDM?` · From ${SECTIONS[p.seg].short}`:''}</div></div>
       <div class="cur-doms">${p.domains.map(d=>`<span class="pill">${d}</span>`).join('')}</div>
-      <span class="cur-status ${inEdm?'in':'out'}">${inEdm?icon('check',13,2.2)+' In EDM':'Not in EDM'}</span>
+      <span class="cur-status ${inEdm?'in':'out'}">${inEdm?icon('check',13,2.2)+' In '+SECTIONS.edm.short:'Not in '+SECTIONS.edm.short}</span>
       <div class="cur-doms">${domChips}</div>
       <div class="cur-acts"></div>`;
     const acts=row.querySelector('.cur-acts');
     if(inEdm){
       const edit=el('button','link-btn','Edit domains'); edit.onclick=()=>openPushModal(p);
-      const rm=el('button','link-btn','Remove'); rm.onclick=()=>{p.edm=false;persist();toast(`Removed “${p.name}” from the EDM`);render();};
+      const rm=el('button','link-btn','Remove'); rm.onclick=()=>{p.edm=false;persist();toast(`Removed “${p.name}” from ${SECTIONS.edm.short}`);render();};
       acts.appendChild(edit); if(!isEDM) acts.appendChild(rm); else acts.appendChild(rm);
     }else{
-      const push=el('button','push-btn','▲ Push to EDM'); push.onclick=()=>openPushModal(p);
+      const push=el('button','push-btn',`▲ Push to ${SECTIONS.edm.short}`); push.onclick=()=>openPushModal(p);
       acts.appendChild(push);
     }
     wrap.appendChild(row);
